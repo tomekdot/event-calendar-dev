@@ -1,0 +1,5 @@
+# Ignore built plugin packages
+*.op
+
+# Build artifacts
+.stage/

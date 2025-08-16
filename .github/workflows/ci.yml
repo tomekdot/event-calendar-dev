@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect plugin directory
+        id: detect
+        shell: bash
+        run: |
+          if [ -d "event-calendar-dev" ]; then
+            echo "path=event-calendar-dev" >> "$GITHUB_OUTPUT"
+          elif [ -f "build-op.ps1" ]; then
+            echo "path=." >> "$GITHUB_OUTPUT"
+          else
+            # fallback to plugin path; workflow will fail later with clearer error if missing
+            echo "path=event-calendar-dev" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build .op package
+        shell: pwsh
+        working-directory: ${{ steps.detect.outputs.path }}
+        run: |
+          & "./build-op.ps1" -IncludeTests
+      - name: Verify artifact
+        shell: pwsh
+        working-directory: ${{ steps.detect.outputs.path }}
+        run: |
+          & "./tools/verify-release.ps1"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-calendar-op
+          path: ${{ steps.detect.outputs.path }}/event-calendar-dev.op
