@@ -43,27 +43,11 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 
 ## ✅ Run tests locally
 
-- The test harness in `tests/TestHelpers.as` can be invoked from code or from the console. Example:
-
-  ```angelscript
-  // Run a simple smoke test
-  RunHelpersTests();
-
-  // Or call the entrypoint added to the test helper
-  TestHelpers::Run();
-  ```
-
 - There is also a small PowerShell verifier that checks the generated `.op` package and lists its contents:
 
   ```powershell
   pwsh -NoProfile -ExecutionPolicy Bypass -File ./tools/verify-release.ps1
   ```
-
-## 📤 Publishing checklist
-
-- Ensure `info.toml` meta fields are correct (name, author, version, category). Keep the file minimal to avoid API validation errors.
-- Add the `repository` URL to `info.toml` if you will publish the project on GitHub.
-- Tag a release (e.g. `v1.0.0`) and push the tag; the included GitHub Actions workflow can create a Release and upload the `.op`.
 
 ## 🔁 CI
 
