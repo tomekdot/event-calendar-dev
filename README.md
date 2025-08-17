@@ -51,7 +51,7 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 
 ## 🔁 CI
 
-- `.github/workflows/ci.yml` builds the package and uploads the artifact. `.github/workflows/release.yml` triggers on tag pushes to create a GitHub Release.
+- `.github/workflows/ci.yml` builds the package and uploads the artifact.
 
 ## 📁 Files of interest
 
