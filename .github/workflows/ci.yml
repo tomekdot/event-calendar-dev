@@ -1,42 +1,34 @@
 name: CI
 
 on:
-    push:
-        branches: [ main, master ]
-    pull_request:
-        branches: [ main, master ]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+  build:
+    name: Build & Verify (.op)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: "Debug: list plugin folder"
-              shell: pwsh
-              run: |
-                  Write-Host "Workspace: $env:GITHUB_WORKSPACE"
-                  # Use forward-slash style with the workspace env var so this works on Linux and Windows runners
-                  $plugin = "$env:GITHUB_WORKSPACE/Plugins/event-calendar-dev"
-                  if (Test-Path $plugin) {
-                      Get-ChildItem -Path $plugin -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
-                  } else {
-                      Write-Host "Plugin folder not found: $plugin"
-                  }
+      - name: Build plugin (.op)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "Running build-op.ps1 (includes tests)"
+          .\build-op.ps1 -IncludeTests
 
-                        - name: "Build .op package"
-                            shell: pwsh
-                            run: |
-                                    # Invoke the build script using the workspace path; use & to call the script directly from the pwsh shell
-                                    & "$env:GITHUB_WORKSPACE/Plugins/event-calendar-dev/build-op.ps1" -IncludeTests
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          Write-Host "Running tools/verify-release.ps1"
+          .\tools\verify-release.ps1
 
-                        - name: "Verify artifact"
-                            shell: pwsh
-                            run: |
-                                    & "$env:GITHUB_WORKSPACE/Plugins/event-calendar-dev/tools/verify-release.ps1"
-
-            - name: "Upload artifact"
-              uses: actions/upload-artifact@v4
-              with:
-                  name: event-calendar-op
-                  path: Plugins/event-calendar-dev/event-calendar-dev.op
+      - name: Upload .op artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-calendar-op
+          path: event-calendar-dev.op
