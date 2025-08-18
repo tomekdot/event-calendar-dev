@@ -1,6 +1,6 @@
 void RenderMenu() {
     
-    if (UI::BeginMenu(Icons::CalendarO + " " + "Moon Calendar")) {
+    if (UI::BeginMenu(Icons::CalendarO + " " + "Event Calendar")) {
         if (UI::MenuItem(Icons::Cog + "Toggle Calendar", "", g_UIState.ShowCalendarWindow)) {
             g_UIState.ShowCalendarWindow = !g_UIState.ShowCalendarWindow;
             S_ShowCalendarOnStart = g_UIState.ShowCalendarWindow;
