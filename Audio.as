@@ -1,100 +1,113 @@
-Audio::Sample@ LoadSampleRel(const string &in rel) {
-    if (rel.Length == 0) return null;
-    Audio::Sample@ s = null;
-    bool looksLikeParentRef = rel.IndexOf("..") != -1;
+Audio::Sample@ LoadSampleRel(const string &in relPath) {
+    if (relPath.Length == 0) {
+        return null;
+    }
+
+    try {
+        Audio::Sample@ s = Audio::LoadSample(relPath);
+        if (s !is null) {
+            return s;
+        }
+    } catch {
+        warn("[Moon] LoadSample threw for path: " + relPath);
+    }
+
     auto@ self = Meta::ExecutingPlugin();
-
-    if (!looksLikeParentRef) {
-        try {
-            @s = Audio::LoadSample(rel);
-        } catch {
-            warn("[Moon] Audio::LoadSample threw for rel='" + rel + "'");
-            @s = null;
-        }
-        if (s !is null) return s;
-    }
-
     if (self !is null) {
-        string base = self.SourcePath;
-        if (base.Length > 0) {
-            string sep = "/";
-            if (!base.EndsWith("/") && !base.EndsWith("\\")) base += sep;
-            string absPath = base + rel;
-            absPath = absPath.Replace("//", "/");
-            try {
-                if (IO::FileExists(absPath)) {
-                    @s = Audio::LoadSampleFromAbsolutePath(absPath);
-                    if (s !is null) return s;
-                } else {
-                    warn("[Moon] Sound file does not exist at absolute path: " + absPath + " (relative: " + rel + ")");
-                }
-            } catch {
-                warn("[Moon] Audio::LoadSampleFromAbsolutePath threw for path='" + absPath + "'");
+    string absPath = Path::Join(self.SourcePath, relPath);
+        
+        try {
+            if (IO::FileExists(absPath)) {
+                return Audio::LoadSampleFromAbsolutePath(absPath);
+            } else {
+                warn("[Moon] Audio file not found: " + absPath);
             }
+        } catch {
+            warn("[Moon] LoadSampleFromAbsolutePath threw for path: " + absPath);
         }
     }
+    
     return null;
 }
 
-void PreloadSounds() {
-    if (!S_MoonPlaySounds) return;
-    LoadMoonAudioAssets();
+void LoadSpecificSample(PhaseKind k) {
+    if (g_phaseTriedLoad[k]) {
+        return;
+    }
+
+    g_phaseTriedLoad[k] = true;
+    
+    string path = "";
+    switch (k) {
+        case PhaseKind::PK_NM:  path = kMoonSoundNMRel; break;
+        case PhaseKind::PK_FQ:  path = kMoonSoundFQRel; break;
+        case PhaseKind::PK_FM:  path = kMoonSoundFMRel; break;
+        case PhaseKind::PK_LQ:  path = kMoonSoundLQRel; break;
+        case PhaseKind::PK_INT: path = kMoonSoundINTRel; break;
+    }
+
+    if (path.Length > 0) {
+        @g_phaseSamples[k] = LoadSampleRel(path);
+    }
 }
 
 void LoadMoonAudioAssets() {
     if (!S_MoonPlaySounds) return;
+
     if (g_moonSample is null && !g_moonTriedLoad) {
         g_moonTriedLoad = true;
         @g_moonSample = LoadSampleRel(kMoonSoundRel);
-        if (g_moonSample is null) trace("[Moon] LoadAudio: generic sample not loaded.");
-        else trace("[Moon] LoadAudio: generic sample loaded.");
+    trace("[Moon] Loaded generic audio sample: " + (g_moonSample !is null));
     }
+
     if (S_MoonPhaseSounds) {
-        if (g_moonNM is null && !g_moonTriedNM) { g_moonTriedNM = true; @g_moonNM = LoadSampleRel(kMoonSoundNMRel); }
-        if (g_moonFQ is null && !g_moonTriedFQ) { g_moonTriedFQ = true; @g_moonFQ = LoadSampleRel(kMoonSoundFQRel); }
-        if (g_moonFM is null && !g_moonTriedFM) { g_moonTriedFM = true; @g_moonFM = LoadSampleRel(kMoonSoundFMRel); }
-        if (g_moonLQ is null && !g_moonTriedLQ) { g_moonTriedLQ = true; @g_moonLQ = LoadSampleRel(kMoonSoundLQRel); }
-        if (g_moonINT is null && !g_moonTriedINT) { g_moonTriedINT = true; @g_moonINT = LoadSampleRel(kMoonSoundINTRel); }
+        for (uint k = 0; k < PhaseKind::PK_COUNT; k++) {
+            LoadSpecificSample(PhaseKind(k));
+        }
     }
 }
 
+void PreloadSounds() {
+    if (!S_MoonPlaySounds) return;
+    
+    startnew(LoadMoonAudioAssets);
+}
+
 void PlayTestSound() {
-    if (g_moonSample is null) {
-        g_moonTriedLoad = false;
+    if (g_moonSample is null && !g_moonTriedLoad) {
         LoadMoonAudioAssets();
     }
+
     if (g_moonSample !is null) {
-        float gain = S_MoonSoundGain;
-        if (gain <= 0.0) gain = 0.5;
+        float gain = S_MoonSoundGain <= 0.0f ? 0.5f : S_MoonSoundGain;
         Audio::Play(g_moonSample, gain);
     } else {
-        warn("[Moon] Test sound failed — sample not loaded.");
+    warn("[Moon] Test sound playback failed — sample not loaded.");
     }
 }
 
 void PlayMoonSound(PhaseKind k) {
     if (!S_MoonPlaySounds) return;
+
+    Audio::Sample@ sampleToPlay = g_moonSample;
+
     if (S_MoonPhaseSounds) {
-        EnsurePhaseSampleLoaded(k);
-        Audio::Sample@ s = null;
-        if (k == PhaseKind::PK_NM) @s = g_moonNM;
-        else if (k == PhaseKind::PK_FQ) @s = g_moonFQ;
-        else if (k == PhaseKind::PK_FM) @s = g_moonFM;
-        else if (k == PhaseKind::PK_LQ) @s = g_moonLQ;
-        else if (k == PhaseKind::PK_INT) @s = g_moonINT;
-        if (s !is null) { Audio::Play(s, S_MoonSoundGain); return; }
+        if (!g_phaseTriedLoad[k]) {
+            LoadSpecificSample(k);
+        }
+        
+        if (g_phaseSamples[k] !is null) {
+            @sampleToPlay = g_phaseSamples[k];
+        }
     }
-    if (g_moonSample is null && !g_moonTriedLoad) {
+
+    if (sampleToPlay is null && !g_moonTriedLoad) {
         g_moonTriedLoad = true;
         @g_moonSample = LoadSampleRel(kMoonSoundRel);
+        @sampleToPlay = g_moonSample;
     }
-    if (g_moonSample !is null) Audio::Play(g_moonSample, S_MoonSoundGain);
-}
 
-void EnsurePhaseSampleLoaded(PhaseKind k) {
-    if (k == PhaseKind::PK_NM && g_moonNM is null && !g_moonTriedNM) { g_moonTriedNM = true; @g_moonNM = LoadSampleRel(kMoonSoundNMRel); }
-    else if (k == PhaseKind::PK_FQ && g_moonFQ is null && !g_moonTriedFQ) { g_moonTriedFQ = true; @g_moonFQ = LoadSampleRel(kMoonSoundFQRel); }
-    else if (k == PhaseKind::PK_FM && g_moonFM is null && !g_moonTriedFM) { g_moonTriedFM = true; @g_moonFM = LoadSampleRel(kMoonSoundFMRel); }
-    else if (k == PhaseKind::PK_LQ && g_moonLQ is null && !g_moonTriedLQ) { g_moonTriedLQ = true; @g_moonLQ = LoadSampleRel(kMoonSoundLQRel); }
-    else if (k == PhaseKind::PK_INT && g_moonINT is null && !g_moonTriedINT) { g_moonTriedINT = true; @g_moonINT = LoadSampleRel(kMoonSoundINTRel); }
+    if (sampleToPlay !is null) {
+        Audio::Play(sampleToPlay, S_MoonSoundGain);
+    }
 }

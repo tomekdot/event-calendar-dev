@@ -1,196 +1,166 @@
 namespace TestHelpers {
-	class TestResult {
-		string name;
-		bool passed;
-		string message; 
 
-		TestResult() {}
-		TestResult(const string &in n, bool p, const string &in m) { name = n; passed = p; message = m; }
-	}
+    class TestResult {
+        string name;
+        bool passed;
+        string message; 
 
-	array<TestResult@> g_Results;
+        TestResult(const string &in n, bool p, const string &in m) {
+            name = n; passed = p; message = m;
+        }
+    }
 
-	void _Trace(const string &in s) {
-		trace("[TEST] " + s);
-	}
+    array<TestResult@> g_Results;
 
-	int64 UtcMsFromYMDHMS(int Y, int M, int D, int h, int m, int s) {
-		int64 secs = Helpers::StampFromUTC(Y, M, D, h, m, s);
-		return secs * 1000;
-	}
+    void _Trace(const string &in s) { trace("[TEST] " + s); }
+    
+    string _FmtExpAct(const string &in t, const string &in exp, const string &in act) {
+        return t + ": expected='" + exp + "' actual='" + act + "'";
+    }
 
-	string _FmtExpAct(const string &in t, const string &in exp, const string &in act) {
-		return t + ": expected='" + exp + "' actual='" + act + "'";
-	}
+    class TestContext {
+        string name;
+        bool failed = false;
+        string failMsg = "";
 
-	class TestContext {
-		string name;
-		bool failed = false;
-		string failMsg = "";
+        TestContext(const string &in n) { name = n; }
 
-		TestContext(const string &in n) { name = n; }
-
-		void _Fail(const string &in msg) {
-			if (!failed) {
-				failed = true;
-				failMsg = msg;
-				_Trace(name + " FAILED: " + msg);
-			} else {
-				failMsg += " | " + msg;
-				_Trace(name + " extra failure: " + msg);
-			}
+        void _Fail(const string &in msg) {
+            if (!failed) {
+                failed = true;
+                failMsg = msg;
+                _Trace(name + " FAILED: " + msg);
+            } else {
+                failMsg += " | " + msg;
+            }
+        }
+        
+        void AssertTrue(bool v, const string &in msg = "") {
+			 if (!v) _Fail(msg.Length > 0 ? msg : "expected true");
 		}
 
-		void AssertTrue(bool v, const string &in msg = "") {
-			if (!v) _Fail((msg.Length != 0) ? msg : "expected true");
+        void AssertFalse(bool v, const string &in msg = "") { 
+			if (v) _Fail(msg.Length > 0 ? msg : "expected false");
 		}
 
-		void AssertFalse(bool v, const string &in msg = "") {
-			if (v) _Fail((msg.Length != 0) ? msg : "expected false");
+        void AssertNotNull(ref@ obj, const string &in msg = "") { 
+			if (obj is null) _Fail(msg.Length > 0 ? msg : "expected non-null"); 
 		}
 
-		void AssertEqualInt(int expected, int actual, const string &in tag = "") {
-			if (expected != actual) {
-				string m = _FmtExpAct((tag.Length != 0) ? tag : "int", tostring(expected), tostring(actual));
-				_Fail(m);
-			}
-		}
+        void AssertEqual(int expected, int actual, const string &in tag = "") {
+            if (expected != actual) _Fail(_FmtExpAct(tag.Length > 0 ? tag : "int", tostring(expected), tostring(actual)));
+        }
 
-		void AssertEqualInt64(int64 expected, int64 actual, const string &in tag = "") {
-			if (expected != actual) {
-				string m = _FmtExpAct((tag.Length != 0) ? tag : "int64", tostring(expected), tostring(actual));
-				_Fail(m);
-			}
-		}
+        void AssertEqual(int64 expected, int64 actual, const string &in tag = "") {
+            if (expected != actual) _Fail(_FmtExpAct(tag.Length > 0 ? tag : "int64", tostring(expected), tostring(actual)));
+        }
 
-		void AssertEqualBool(bool expected, bool actual, const string &in tag = "") {
-			if (expected != actual) {
-				string m = _FmtExpAct((tag.Length != 0) ? tag : "bool", tostring(expected), tostring(actual));
-				_Fail(m);
-			}
-		}
+        void AssertEqual(bool expected, bool actual, const string &in tag = "") {
+            if (expected != actual) _Fail(_FmtExpAct(tag.Length > 0 ? tag : "bool", tostring(expected), tostring(actual)));
+        }
 
-		void AssertEqualString(const string &in expected, const string &in actual, const string &in tag = "") {
-			if (expected != actual) {
-				string m = _FmtExpAct((tag.Length != 0) ? tag : "string", expected, actual);
-				_Fail(m);
-			}
-		}
+        void AssertEqual(const string &in expected, const string &in actual, const string &in tag = "") {
+            if (expected != actual) _Fail(_FmtExpAct(tag.Length > 0 ? tag : "string", expected, actual));
+        }
 
-		void AssertAlmostEqualFloat(float expected, float actual, float tol = 1e-5f, const string &in tag = "") {
-			float diff = Math::Abs(expected - actual);
-			if (diff > tol) {
-				string m = _FmtExpAct((tag.Length != 0) ? tag : "float", tostring(expected), tostring(actual)) + " diff=" + tostring(diff) + " tol=" + tostring(tol);
-				_Fail(m);
-			}
-		}
+        void _FinishInternal() {
+            g_Results.InsertLast(TestResult(name, !failed, failMsg));
+            if (!failed) _Trace(name + " PASSED");
+        }
+    }
 
-		void AssertArrayEqualString(const array<string> &in expected, const array<string> &in actual, const string &in tag = "") {
-			if (expected.Length != actual.Length) {
-				_Fail(_FmtExpAct((tag.Length != 0) ? tag : "array<string>.len", tostring(expected.Length), tostring(actual.Length)));
-				return; 
-			}
-			for (uint i = 0; i < expected.Length; i++) {
-				if (expected[i] != actual[i]) {
-					_Fail(_FmtExpAct((tag.Length != 0) ? tag : "array<string> item", expected[i], actual[i]) + " at=" + tostring(i));
-					return; 
-				}
-			}
-		}
+    void ClearResults() { g_Results.Resize(0); }
 
-		void AssertNotNull(ref obj, const string &in tag = "") {
-			if (obj is null) _Fail((tag.Length != 0) ? tag : "expected non-null reference");
-		}
+    bool Summary() {
+        uint passed = 0;
+        uint total = g_Results.Length;
+        for (uint i = 0; i < total; i++) if (g_Results[i].passed) passed++;
 
-		void Finish() {
-			if (failed) {
-				TestResult@ tr = TestResult(name, false, failMsg);
-				g_Results.InsertLast(tr);
-			} else {
-				TestResult@ tr = TestResult(name, true, "");
-				g_Results.InsertLast(tr);
-				_Trace(name + " PASSED");
-			}
-		}
-	}
+        _Trace("Test summary: " + tostring(passed) + "/" + tostring(total) + " passed.");
 
-	TestContext@ Start(const string &in name) {
-		TestContext@ ctx = TestContext(name);
-		_Trace("Starting: " + name);
-		return ctx;
-	}
+        if (passed != total) {
+            _Trace("--- FAILED TESTS ---");
+            for (uint i = 0; i < total; i++) {
+                auto@ r = g_Results[i];
+                if (!r.passed) _Trace(" - " + r.name + ": " + r.message);
+            }
+            _Trace("--------------------");
+        }
+        return passed == total;
+    }
+    
+    void RunTest(const string &in testName, TestFunc@ testFunc) {
+        _Trace("Starting: " + testName);
+        TestContext ctx(testName);
+        testFunc(ctx); 
+        ctx._FinishInternal();
+    }
+}
 
-	bool Summary() {
-		int passed = 0; 
-		int total = int(g_Results.Length);
-		for (uint i = 0; i < g_Results.Length; i++) {
-			TestResult@ _r = g_Results[i];
-			if (_r !is null && _r.passed) passed++;
-		}
-		
-		_Trace("Test summary: " + tostring(passed) + "/" + tostring(total) + " passed.");
-		
-		if (passed != total) {
-			for (uint i = 0; i < g_Results.Length; i++) {
-				TestResult@ _r = g_Results[i];
-				if (_r !is null && !_r.passed) {
-					_Trace(" - FAIL: " + _r.name + " -> " + _r.message);
-				}
-			}
-		}
-		return passed == total;
-	}
+funcdef void TestFunc(TestHelpers::TestContext &inout);
 
-	void ClearResults() { g_Results.RemoveRange(0, g_Results.Length); }
+void Test_StampFromUTC_Epoch(TestHelpers::TestContext &inout ctx) {
+    int64 secs = Helpers::StampFromUTC(1970, 1, 1, 0, 0, 0);
+    ctx.AssertEqual(int64(0), secs, "epoch seconds should be zero");
+}
 
-	void Run() {
-		RunHelpersTests();
-	}
-	
-	string ToStringIntArray(const array<int> &in a) {
-		string buf = "[";
-		for (uint i = 0; i < a.Length; i++) {
-			if (i != 0) buf += ", ";
-			buf += tostring(a[i]);
-		}
-		buf += "]";
-		return buf;
-	}
+void Test_StampFromUTC_Roundtrip(TestHelpers::TestContext &inout ctx) {
+    int64 secs = Helpers::StampFromUTC(2020, 2, 29, 12, 34, 56);
+    int Y, M, D, h, m, s;
+    UtcYMDHMSFromMs(secs * 1000, Y, M, D, h, m, s);
+    ctx.AssertEqual(2020, Y, "year");
+    ctx.AssertEqual(2, M, "month");
+    ctx.AssertEqual(29, D, "day");
+    ctx.AssertEqual(12, h, "hour");
+    ctx.AssertEqual(34, m, "minute");
+    ctx.AssertEqual(56, s, "second");
+}
 
-	string ToStringStringArray(const array<string> &in a) {
-		string buf = "[";
-		for (uint i = 0; i < a.Length; i++) {
-			if (i != 0) buf += ", ";
-			buf += "\"" + a[i] + "\"";
-		}
-		buf += "]";
-		return buf;
-	}
+void Test_ParseTimeString_Basic(TestHelpers::TestContext &inout ctx) {
+    int h, m, s;
+    bool ok = Helpers::ParseTimeString("09:05", h, m, s);
+    ctx.AssertTrue(ok, "parse should succeed");
+    ctx.AssertEqual(9, h, "hour");
+    ctx.AssertEqual(5, m, "minute");
+    ctx.AssertEqual(0, s, "second default");
+}
 
+void Test_ParseTimeString_Suffixes(TestHelpers::TestContext &inout ctx) {
+    int h, m, s;
+    ctx.AssertTrue(Helpers::ParseTimeString("23:59 UTC", h, m, s), "UTC suffix");
+    ctx.AssertEqual(23, h);
+    ctx.AssertTrue(Helpers::ParseTimeString("00:00UTC", h, m, s), "no-space-utc");
+    ctx.AssertEqual(0, h);
+    ctx.AssertTrue(Helpers::ParseTimeString(" 7:8  ut ", h, m, s), "extra spaces and ut");
+    ctx.AssertEqual(7, h);
+}
 
-	void UtcYMDFromMs(int64 ms, int &out Y, int &out M, int &out D) {
-		::UtcYMDFromMs(ms, Y, M, D);
-	}
-	
-	void UtcYMDHMSFromMs(int64 ms, int &out Y, int &out M, int &out D, int &out h, int &out m, int &out s) {
-		::UtcYMDHMSFromMs(ms, Y, M, D, h, m, s);
-	}
+void Test_ParseTimeString_Invalid(TestHelpers::TestContext &inout ctx) {
+    int h, m, s;
+    ctx.AssertFalse(Helpers::ParseTimeString("not-a-time", h, m, s), "invalid format");
+    ctx.AssertFalse(Helpers::ParseTimeString("24:00", h, m, s), "out-of-range");
+	ctx.AssertFalse(Helpers::ParseTimeString("12:60", h, m, s), "invalid minute");
+}
+
+void RunAllTests() {
+    TestHelpers::ClearResults();
+
+    TestHelpers::RunTest("StampFromUTC: Epoch", @Test_StampFromUTC_Epoch);
+    TestHelpers::RunTest("StampFromUTC: Roundtrip Leap Year", @Test_StampFromUTC_Roundtrip);
+    TestHelpers::RunTest("ParseTimeString: Basic", @Test_ParseTimeString_Basic);
+    TestHelpers::RunTest("ParseTimeString: Suffix Handling", @Test_ParseTimeString_Suffixes);
+    TestHelpers::RunTest("ParseTimeString: Invalid Inputs", @Test_ParseTimeString_Invalid);
+
+    bool allPassed = TestHelpers::Summary();
+    trace("[TESTRUN] All tests completed. Overall status: " + (allPassed ? "PASSED" : "FAILED"));
+    
+    if (allPassed) {
+        UI::ShowNotification("Moon Tests", "All " + tostring(TestHelpers::g_Results.Length) + " tests passed.", vec4(0.2, 0.7, 0.2, 1), 5000);
+    } else {
+        UI::ShowNotification("Moon Tests", "Some tests failed! See log for details.", vec4(0.9, 0.2, 0.1, 1), 7000);
+    }
 }
 
 void RunHelpersTests() {
-	TestHelpers::ClearResults();
-	TestHelpers::TestContext@ ctx = TestHelpers::Start("helpers smoke");
-
-	ctx.AssertTrue(true, "sanity");
-	ctx.AssertEqualInt(1, 1, "one equals one");
-	ctx.Finish();
-	
-	bool ok = TestHelpers::Summary();
-	trace("[TESTRUN] RunHelpersTests completed - all passed: " + tostring(ok));
-	
-	if (ok) {
-		UI::ShowNotification("Moon Tests", "All helper tests passed.", vec4(0.15, 0.7, 0.25, 1), 4000);
-	} else {
-		UI::ShowNotification("Moon Tests", "Some helper tests failed. See log.", vec4(0.9, 0.45, 0.1, 1), 6000);
-	}
+    startnew(RunAllTests);
 }

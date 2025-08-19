@@ -1,4 +1,4 @@
-enum PhaseKind { PK_NM, PK_FQ, PK_FM, PK_LQ, PK_INT, PK_UNKNOWN }
+enum PhaseKind { PK_NM, PK_FQ, PK_FM, PK_LQ, PK_INT, PK_COUNT, PK_UNKNOWN }
 
 class EventItem {
     string id;
