@@ -1,5 +1,4 @@
 namespace Helpers {
-    
     bool g_HasLoggedNullEvent = false;
     bool g_DebugEnabled = false;
 
