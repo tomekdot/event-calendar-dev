@@ -132,7 +132,7 @@ void ProcessApiResponse(Json::Value@ root, bool isInitialFetch) {
 
 void FetchCoroutine(ref@ args_ref) {
     dictionary@ args = cast<dictionary>(args_ref);
-    if(args is null || !args.Exists("url") || !args.Exists("requestID")) { 
+    if (args is null || !args.Exists("url") || !args.Exists("requestID")) { 
         error("[Moon] Invalid args for FetchCoroutine."); 
         return; 
     }
