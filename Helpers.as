@@ -34,7 +34,8 @@ namespace Helpers {
             return false;
         }
 
-        for (uint i = 0; i < x.Length; i++) {
+        int len = int(x.Length);
+        for (int i = 0; i < len; i++) {
             string singleChar = x.SubStr(i, 1);
             if (singleChar < "0" || singleChar > "9") {
                 return false; 
@@ -44,7 +45,7 @@ namespace Helpers {
     }
 
     bool ParseTimeString(const string &in timeStr, int &out h, int &out m, int &out s) {
-        if (timeStr.Length == 0) {
+    if (timeStr.Length == 0) {
             return false;
         }
 
