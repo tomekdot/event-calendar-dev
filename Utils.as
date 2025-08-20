@@ -13,18 +13,18 @@ string PhaseDisplayTitle(const string &in p) {
 string PhaseAbbrev(const string &in p) {
     string lower = p.ToLower();
     if (lower == PHASE_NEW_MOON) return "NM";
-    else if (lower == PHASE_FIRST_QUARTER) return "FQ";
-    else if (lower == PHASE_FULL_MOON) return "FM";
-    else if (lower == PHASE_LAST_QUARTER) return "LQ";
+    if (lower == PHASE_FIRST_QUARTER) return "FQ";
+    if (lower == PHASE_FULL_MOON) return "FM";
+    if (lower == PHASE_LAST_QUARTER) return "LQ";
     return "INT";
 }
 
 PhaseKind GetPhaseKind(const string &in t) {
     string lower = t.ToLower();
     if (lower == PHASE_NEW_MOON) return PhaseKind::PK_NM;
-    else if (lower == PHASE_FIRST_QUARTER) return PhaseKind::PK_FQ;
-    else if (lower == PHASE_FULL_MOON) return PhaseKind::PK_FM;
-    else if (lower == PHASE_LAST_QUARTER) return PhaseKind::PK_LQ;
+    if (lower == PHASE_FIRST_QUARTER) return PhaseKind::PK_FQ;
+    if (lower == PHASE_FULL_MOON) return PhaseKind::PK_FM;
+    if (lower == PHASE_LAST_QUARTER) return PhaseKind::PK_LQ;
     return PhaseKind::PK_INT;
 }
 

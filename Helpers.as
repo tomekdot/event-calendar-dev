@@ -23,7 +23,7 @@ namespace Helpers {
     }
 
     string AppendQueryParam(const string &in url, const string &in key, const string &in value) {
-        if (url.IndexOf(key + "=") != -1) return url;
+        if (url.IndexOf("?" + key + "=") != -1 || url.IndexOf("&" + key + "=") != -1) return url;
         if (url.IndexOf('?') == -1) return url + "?" + key + "=" + value;
         return url + "&" + key + "=" + value;
     }

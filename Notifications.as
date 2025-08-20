@@ -6,18 +6,10 @@ void ShowSingleNotification(EventItem@ e, int64 nowMs) {
     int64 deltaMs = e.startMs - nowMs;
     string when = FriendlyDeltaLong(deltaMs);
     string whenUtc = Time::FormatStringUTC("%Y-%m-%d %H:%M UTC", e.startMs / 1000);
-    
-    string title = "[MOON] " + e.title;
-    string status;
-    if (deltaMs >= 0) {
-        status = "Starts in " + when;
-    } else {
-        status = "Started " + FriendlyDeltaLong(-deltaMs) + " ago";
-    }
 
-    UI::ShowNotification(title, status + "\n" + whenUtc, PhaseColorForTitleLower(e.title), S_NotificationDurationSec * 1000);
-    trace("[Moon] Showing notification for '" + e.title + "' (deltaMs=" + deltaMs + ")");
-    
+    string status = deltaMs >= 0 ? "Starts in " + when : "Started " + FriendlyDeltaLong(-deltaMs) + " ago";
+
+    UI::ShowNotification("[MOON] " + e.title, status + "\n" + whenUtc, PhaseColorForTitleLower(e.title), S_NotificationDurationSec * 1000);
     PlayMoonSound(GetPhaseKind(e.title));
 }
 

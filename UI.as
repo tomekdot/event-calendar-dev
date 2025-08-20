@@ -32,21 +32,27 @@ void RenderInterface() {
 void RenderCalendarHeader() {
     bool dateChanged = false;
 
-    if (UI::Button("<<")) { g_UIState.CalYear--; dateChanged = true; } 
+    if (UI::Button("<<")) { g_UIState.CalYear--; dateChanged = true; }
     UI::SameLine(0, 5);
-    if (UI::Button("<"))  { g_UIState.CalMonth--; if (g_UIState.CalMonth < 1) { g_UIState.CalMonth = 12; g_UIState.CalYear--; } dateChanged = true; }
-    
+    if (UI::Button("<")) {
+        g_UIState.CalMonth--;
+        if (g_UIState.CalMonth < 1) { g_UIState.CalMonth = 12; g_UIState.CalYear--; }
+        dateChanged = true;
+    }
+
     UI::SameLine(0, 15);
     UI::Text(UIHelpers::GetMonthName(g_UIState.CalMonth) + " " + tostring(g_UIState.CalYear));
     UI::SameLine(0, 15);
 
-    if (UI::Button(">"))  { g_UIState.CalMonth++; if (g_UIState.CalMonth > 12) { g_UIState.CalMonth = 1; g_UIState.CalYear++; } dateChanged = true; }
+    if (UI::Button(">")) {
+        g_UIState.CalMonth++;
+        if (g_UIState.CalMonth > 12) { g_UIState.CalMonth = 1; g_UIState.CalYear++; }
+        dateChanged = true;
+    }
     UI::SameLine(0, 5);
     if (UI::Button(">>")) { g_UIState.CalYear++; dateChanged = true; }
 
-    if (dateChanged) {
-        FetchForCalendarView();
-    }
+    if (dateChanged) FetchForCalendarView();
 }
 
 void RenderCalendarGrid() {

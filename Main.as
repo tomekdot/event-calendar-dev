@@ -21,26 +21,16 @@ void Main() {
 }
 
 void PollingCoroutine() {
-    trace("[Moon] Polling coroutine started.");
     while (true) {
-        int waitSeconds = Math::Max(30, S_PollIntervalSec);
-        sleep(waitSeconds * 1000);
-
-        trace("[Moon] Polling for latest data...");
+        sleep(Math::Max(30, S_PollIntervalSec) * 1000);
         FetchLatestData();
     }
 }
 
 void NotificationMonitorCoroutine() {
-    trace("[Moon] Notification monitor coroutine started.");
     while (true) {
-
-        if (!g_InitialNotificationsShown) {
-            sleep(5000); 
-        }
-
+        if (!g_InitialNotificationsShown) sleep(5000);
         ProcessAndShowNotifications();
-
         sleep(kOneMinuteMs);
     }
 }

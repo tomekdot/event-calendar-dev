@@ -142,7 +142,6 @@ void ProcessApiResponse(Json::Value@ root, bool isInitialFetch) {
     }
 }
 
-// Move event list into global and populate month cache.
 void UpdateEventsAndCache(const array<EventItem@>@ local_events) {
     g_Events = local_events;
     g_MonthEventCache.DeleteAll();
@@ -162,7 +161,7 @@ void UpdateEventsAndCache(const array<EventItem@>@ local_events) {
 }
 
 void HandleInitialFetchSuccess() {
-    trace("[Moon] Successfully fetched " + g_Events.Length + " main events.");
+    if (S_EnableDebug) trace("[Moon] Successfully fetched " + g_Events.Length + " main events.");
     if (!g_InitialNotificationsShown) {
         Event_ShowStartupNotifications();
         g_InitialNotificationsShown = true;
@@ -172,7 +171,7 @@ void HandleInitialFetchSuccess() {
 void HandleCalendarFetchSuccess() {
     g_LastFetchedYear = g_UIState.CalYear;
     g_LastFetchedMonth = g_UIState.CalMonth;
-    trace("[Moon] Fetched " + g_Events.Length + " events for calendar: " + g_UIState.CalYear + "-" + g_UIState.CalMonth);
+    if (S_EnableDebug) trace("[Moon] Fetched " + g_Events.Length + " events for calendar: " + g_UIState.CalYear + "-" + g_UIState.CalMonth);
 }
 
 void FetchCoroutine(ref@ args_ref) {
@@ -189,7 +188,7 @@ void FetchCoroutine(ref@ args_ref) {
     if (!isInitialFetch) {
         g_IsLoading = true;
     }
-    trace("[Moon] Fetching (ID: " + requestID + "): " + url);
+    if (S_EnableDebug) trace("[Moon] Fetching (ID: " + requestID + "): " + url);
     
     Net::HttpRequest@ req = Net::HttpGet(url);
     while (!req.Finished()) { 
@@ -197,7 +196,7 @@ void FetchCoroutine(ref@ args_ref) {
     }
     
     if (requestID != FetchInternal::g_FetchRequestID) {
-        trace("[Moon] Ignoring stale fetch response (ID: " + requestID + ", current: " + FetchInternal::g_FetchRequestID + ")");
+        if (S_EnableDebug) trace("[Moon] Ignoring stale fetch response (ID: " + requestID + ", current: " + FetchInternal::g_FetchRequestID + ")");
         if (!isInitialFetch) g_IsLoading = false; 
         return;
     }
@@ -224,7 +223,6 @@ void FetchCoroutine(ref@ args_ref) {
 
     ProcessApiResponse(root, isInitialFetch);
 
-    // If the caller registered a handler, invoke it now with the final events array.
     if (args !is null && args.Exists("handlerIdx")) {
         int idx = int(args["handlerIdx"]);
         if (idx >= 0 && idx < int(g_FetchHandlers.Length)) {
