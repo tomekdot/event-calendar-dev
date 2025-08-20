@@ -142,6 +142,20 @@ void Test_ParseTimeString_Invalid(TestHelpers::TestContext &inout ctx) {
 	ctx.AssertFalse(Helpers::ParseTimeString("12:60", h, m, s), "invalid minute");
 }
 
+void Test_AppendQueryParam_Basic(TestHelpers::TestContext &inout ctx) {
+    string u = "https://example.com/path";
+    string a = Helpers::AppendQueryParam(u, "foo", "1");
+    ctx.AssertEqual("https://example.com/path?foo=1", a, "append when no query");
+
+    string u2 = "https://example.com/path?bar=2";
+    string b = Helpers::AppendQueryParam(u2, "foo", "1");
+    ctx.AssertEqual("https://example.com/path?bar=2&foo=1", b, "append to existing query");
+
+    string u3 = "https://example.com/path?foo=9";
+    string c = Helpers::AppendQueryParam(u3, "foo", "1");
+    ctx.AssertEqual(u3, c, "no-op when key exists");
+}
+
 void RunAllTests() {
     TestHelpers::ClearResults();
 
@@ -150,6 +164,7 @@ void RunAllTests() {
     TestHelpers::RunTest("ParseTimeString: Basic", @Test_ParseTimeString_Basic);
     TestHelpers::RunTest("ParseTimeString: Suffix Handling", @Test_ParseTimeString_Suffixes);
     TestHelpers::RunTest("ParseTimeString: Invalid Inputs", @Test_ParseTimeString_Invalid);
+    TestHelpers::RunTest("AppendQueryParam: Basic", @Test_AppendQueryParam_Basic);
 
     bool allPassed = TestHelpers::Summary();
     trace("[TESTRUN] All tests completed. Overall status: " + (allPassed ? "PASSED" : "FAILED"));

@@ -67,7 +67,6 @@ void UtcYMDHMSFromMs(int64 ms, int &out Y, int &out M, int &out D, int &out h, i
 }
 
 namespace UIHelpers {
-
     const string[] MONTH_NAMES = {
         "Invalid", "January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"

@@ -38,4 +38,4 @@ float S_MoonSoundGain = 0.5;
 int S_NotificationDurationSec = 8;
 
 [Setting category="Advanced" name="Enable Debug Traces" description="Show detailed debug logs; use only for troubleshooting"]
-bool S_EnableDebug = false;
+bool S_EnableDebug = true;

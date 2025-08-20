@@ -3,12 +3,17 @@ namespace FetchInternal {
     const string API_BASE_URL = "https://aa.usno.navy.mil/api/moon/phases/date";
 }
 
+funcdef void FetchSuccessHandler(const array<EventItem@>@ events, bool isInitial);
+
+array<FetchSuccessHandler@> g_FetchHandlers;
+
 string BuildApiUrl(int year, int month, int day) {
     string baseUrl = S_MoonApiUrl.Length == 0 ? FetchInternal::API_BASE_URL : S_MoonApiUrl.Split('?')[0];
     int numPhases = S_USNO_NumP <= 0 ? 50 : S_USNO_NumP;
     string dateForApi = tostring(year) + "-" + Two(month) + "-" + Two(day);
 
-    return baseUrl + "?date=" + dateForApi + "&nump=" + tostring(numPhases);
+    string url = baseUrl + "?date=" + dateForApi;
+    return Helpers::AppendQueryParam(url, "nump", tostring(numPhases));
 }
 
 void StartFetchCoroutine(const string &in url, bool isInitial) {
@@ -20,6 +25,33 @@ void StartFetchCoroutine(const string &in url, bool isInitial) {
     args["requestID"] = FetchInternal::g_FetchRequestID; 
 
     startnew(FetchCoroutine, args);
+}
+
+void StartFetchCoroutineWithHandler(const string &in url, bool isInitial, FetchSuccessHandler@ handler) {
+    FetchInternal::g_FetchRequestID++;
+
+    int handlerIdx = -1;
+    if (handler !is null) {
+        g_FetchHandlers.InsertLast(handler);
+        handlerIdx = int(g_FetchHandlers.Length) - 1;
+    }
+
+    dictionary args;
+    args["url"] = url;
+    args["isInitialFetch"] = isInitial;
+    args["requestID"] = FetchInternal::g_FetchRequestID;
+    if (handlerIdx >= 0) args["handlerIdx"] = handlerIdx;
+
+    startnew(FetchCoroutine, args);
+}
+
+bool UnpackFetchArgs(dictionary@ args, string &out url, bool &out isInitialFetch, uint &out requestID) {
+    if (args is null) return false;
+    if (!args.Exists("url") || !args.Exists("requestID")) return false;
+    url = string(args["url"]);
+    isInitialFetch = args.Exists("isInitialFetch") ? bool(args["isInitialFetch"]) : false;
+    requestID = uint(args["requestID"]);
+    return true;
 }
 
 void FetchLatestData() {
@@ -100,7 +132,18 @@ void ProcessApiResponse(Json::Value@ root, bool isInitialFetch) {
         UI::ShowNotification("Moon Calendar", "No moon phases found for this date.", vec4(1,1,0,1), 5000);
         return;
     }
-    
+
+    UpdateEventsAndCache(local_events);
+
+    if (isInitialFetch) {
+        HandleInitialFetchSuccess();
+    } else {
+        HandleCalendarFetchSuccess();
+    }
+}
+
+// Move event list into global and populate month cache.
+void UpdateEventsAndCache(const array<EventItem@>@ local_events) {
     g_Events = local_events;
     g_MonthEventCache.DeleteAll();
     for (uint i = 0; i < g_Events.Length; i++) {
@@ -116,30 +159,32 @@ void ProcessApiResponse(Json::Value@ root, bool isInitialFetch) {
             }
         }
     }
-    
-    if (isInitialFetch) {
-        trace("[Moon] Successfully fetched " + g_Events.Length + " main events.");
-        if (!g_InitialNotificationsShown) {
-            Event_ShowStartupNotifications();
-            g_InitialNotificationsShown = true;
-        }
-    } else {
-        g_LastFetchedYear = g_UIState.CalYear;
-        g_LastFetchedMonth = g_UIState.CalMonth;
-        trace("[Moon] Fetched " + g_Events.Length + " events for calendar: " + g_UIState.CalYear + "-" + g_UIState.CalMonth);
+}
+
+void HandleInitialFetchSuccess() {
+    trace("[Moon] Successfully fetched " + g_Events.Length + " main events.");
+    if (!g_InitialNotificationsShown) {
+        Event_ShowStartupNotifications();
+        g_InitialNotificationsShown = true;
     }
+}
+
+void HandleCalendarFetchSuccess() {
+    g_LastFetchedYear = g_UIState.CalYear;
+    g_LastFetchedMonth = g_UIState.CalMonth;
+    trace("[Moon] Fetched " + g_Events.Length + " events for calendar: " + g_UIState.CalYear + "-" + g_UIState.CalMonth);
 }
 
 void FetchCoroutine(ref@ args_ref) {
     dictionary@ args = cast<dictionary>(args_ref);
-    if (args is null || !args.Exists("url") || !args.Exists("requestID")) { 
-        error("[Moon] Invalid args for FetchCoroutine."); 
-        return; 
+
+    string url;
+    bool isInitialFetch = false;
+    uint requestID = 0;
+    if (!UnpackFetchArgs(args, url, isInitialFetch, requestID)) {
+        error("[Moon] Invalid args for FetchCoroutine.");
+        return;
     }
-    
-    string url = string(args["url"]);
-    bool isInitialFetch = bool(args["isInitialFetch"]);
-    uint requestID = uint(args["requestID"]);
 
     if (!isInitialFetch) {
         g_IsLoading = true;
@@ -178,4 +223,15 @@ void FetchCoroutine(ref@ args_ref) {
     }
 
     ProcessApiResponse(root, isInitialFetch);
+
+    // If the caller registered a handler, invoke it now with the final events array.
+    if (args !is null && args.Exists("handlerIdx")) {
+        int idx = int(args["handlerIdx"]);
+        if (idx >= 0 && idx < int(g_FetchHandlers.Length)) {
+            FetchSuccessHandler@ h = g_FetchHandlers[idx];
+            if (h !is null) {
+                try { h(@g_Events, isInitialFetch); } catch { warn("[Moon] Fetch handler threw an exception."); }
+            }
+        }
+    }
 }

@@ -22,6 +22,12 @@ namespace Helpers {
         return int64(days) * 86400 + int64(h) * 3600 + int64(m) * 60 + int64(s);
     }
 
+    string AppendQueryParam(const string &in url, const string &in key, const string &in value) {
+        if (url.IndexOf(key + "=") != -1) return url;
+        if (url.IndexOf('?') == -1) return url + "?" + key + "=" + value;
+        return url + "&" + key + "=" + value;
+    }
+
     bool IsAllDigits(const string &in str) {
         string x = str.Trim();
         if (x.Length == 0) {
@@ -36,7 +42,6 @@ namespace Helpers {
         }
         return true;
     }
-
 
     bool ParseTimeString(const string &in timeStr, int &out h, int &out m, int &out s) {
         if (timeStr.Length == 0) {

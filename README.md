@@ -69,3 +69,7 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 - Author: `tomekdot`
 - Team: `vitalism-creative`
 - Discord: `@tomekdot`
+
+## 📸 Screenshot
+
+![Moon Phase Calendar screenshot](assets/screenshots/screenshot-01.png)
