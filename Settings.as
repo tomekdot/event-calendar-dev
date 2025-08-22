@@ -38,4 +38,13 @@ float S_MoonSoundGain = 0.5;
 int S_NotificationDurationSec = 8;
 
 [Setting category="Advanced" name="Debug Traces" description="Enable debug traces"]
-bool S_EnableDebug = true;
+bool S_EnableDebug = false;
+
+[Setting category="Support" name="Donate URL" description="Donation URL"]
+string S_SupportDonateUrl = "https://www.paypal.me/tomekdot";
+
+[Setting category="Support" name="GitHub URL" description="Project GitHub URL"]
+string S_SupportGithubUrl = "https://github.com/tomekdot/event-calendar-dev";
+
+[Setting category="Support" name="Discord URL" description="Pursuit Discord URL"]
+string S_SupportDiscordUrl = "https://discord.me/pursuit";

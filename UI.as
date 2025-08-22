@@ -1,17 +1,23 @@
 void RenderMenu() {
     if (UI::BeginMenu(Icons::CalendarO + " " + "Event Calendar")) {
 
-        if (UI::MenuItem(Icons::Cog + "Toggle Calendar", "", g_UIState.ShowCalendarWindow)) {
+        if (UI::MenuItem(Icons::Cog +  " " + "Toggle Calendar", "", g_UIState.ShowCalendarWindow)) {
             g_UIState.ShowCalendarWindow = !g_UIState.ShowCalendarWindow;
             S_ShowCalendarOnStart = g_UIState.ShowCalendarWindow;
         }
 
-        if (UI::MenuItem(Icons::Bug + "Run Helpers Tests")) {
+        if (UI::MenuItem(Icons::Bug + " " + "Run Helpers Tests")) {
             if (S_EnableDebug) {
                 startnew(RunHelpersTests);
             } else {
-                UI::ShowNotification("Moon Tests", "Helpers tests are disabled. Enable S_EnableDebug to run them.", vec4(0.9, 0.6, 0.1, 1), 5000);
+                UI::ShowNotification("Moon Tests", "Helpers tests are disabled. Enable them in the advanced settings.", vec4(0.9, 0.6, 0.1, 1), 5000);
             }
+        }
+
+        UI::Separator();
+
+        if (UI::MenuItem(Icons::Heart + " " + "Support Project", "", g_UIState.ShowSupportWindow)) {
+            g_UIState.ShowSupportWindow = !g_UIState.ShowSupportWindow;
         }
 
         UI::EndMenu();
@@ -21,6 +27,10 @@ void RenderMenu() {
 void RenderInterface() {
     if (g_UIState.ShowCalendarWindow) {
         RenderCalendarWindow();
+    }
+
+    if (g_UIState.ShowSupportWindow) {
+        RenderSupportWindow();
     }
 
     if (S_MoonTestSound) {
@@ -138,10 +148,10 @@ void RenderCalendarWindow() {
     UI::SetNextWindowSize(580, 450, UI::Cond::FirstUseEver);
 
     if (UI::Begin("Moon Phase Calendar", g_UIState.ShowCalendarWindow)) {
-        
+
         RenderCalendarHeader();
         UI::Separator();
-        
+
         if (g_IsLoading) {
             UI::Text("Loading events...");
         } else {
@@ -149,6 +159,79 @@ void RenderCalendarWindow() {
             UI::Separator();
             RenderEventList();
         }
+    }
+    UI::End();
+}
+
+void RenderSupportWindow() {
+    UI::SetNextWindowSize(350, 250, UI::Cond::FirstUseEver);
+    if (UI::Begin(Icons::Heart + " Support Project", g_UIState.ShowSupportWindow)) {
+
+        // ensure fonts are initialized
+        // Fonts::LoadFonts(); // This line can be removed as it's no longer needed
+
+        UI::Dummy(vec2(1, 6));
+        UI::PushFontSize(20.0);
+        UI::Text("Event Calendar");
+        UI::PopFont();
+
+        UI::PushFontSize(14.0);
+        UI::Text("Moon phase tracking for Trackmania");
+        UI::PopFont();
+
+        UI::Dummy(vec2(1, 6));
+
+        UI::PushFontSize(14.0);
+        UI::TextWrapped("Event Calendar tracks moon phases, shows notifications and helps you plan in-game events. If you like this plugin, your feedback and contributions keep it maintained and improving.");
+        UI::PopFont();
+        UI::Dummy(vec2(1, 8));
+
+        UI::TextDisabled("Author: " + "tomekdot");
+        UI::TextDisabled("Team: " + "vitalism-creative");
+        UI::Dummy(vec2(1, 8));
+
+        UI::Text("How you can help:");
+        UI::Indent(8);
+        UI::Text(Icons::Bug + "  Report bugs & issues on GitHub");
+        UI::Text(Icons::LightbulbO + "  Suggest features or improvements");
+        UI::Text(Icons::Code + "  Contribute code or PRs");
+        UI::Text(Icons::Users + "  Join the community on Discord");
+        UI::Unindent(8);
+        UI::Dummy(vec2(1, 8));
+
+        UI::PushStyleColor(UI::Col::Button, vec4(0.0, 0.439, 0.729, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.0, 0.357, 0.608, 1.0));
+        if (UI::Button(Icons::Paypal + " Donate", vec2(-1, 0))) {
+            if (S_SupportDonateUrl.Length > 0) OpenBrowserURL(S_SupportDonateUrl);
+            else UI::ShowNotification("Event Calendar", "No donation link available!", vec4(0.5, 0.5, 0.8, 1.0), 3000);
+        }
+        UI::PopStyleColor(2);
+
+        UI::Dummy(vec2(1, 6));
+
+        UI::PushStyleColor(UI::Col::Button, vec4(0.2, 0.2, 0.2, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.3, 0.3, 0.3, 1.0));
+        if (UI::Button(Icons::Github + " View on GitHub", vec2(-1, 0))) {
+            if (S_SupportGithubUrl.Length > 0) OpenBrowserURL(S_SupportGithubUrl);
+            else UI::ShowNotification("Event Calendar", "No GitHub link available!", vec4(0.5, 0.5, 0.8, 1.0), 3000);
+        }
+        UI::PopStyleColor(2);
+
+        UI::Dummy(vec2(1, 6));
+
+        UI::PushStyleColor(UI::Col::Button, vec4(0.345, 0.396, 0.949, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.267, 0.318, 0.871, 1.0));
+        if (UI::Button(Icons::DiscordAlt + " Join Discord", vec2(-1, 0))) {
+            if (S_SupportDiscordUrl.Length > 0) OpenBrowserURL(S_SupportDiscordUrl);
+            else UI::ShowNotification("Event Calendar", "No Discord link available!", vec4(0.5, 0.5, 0.8, 1.0), 3000);
+        }
+        UI::PopStyleColor(2);
+
+        UI::Dummy(vec2(1, 10));
+        UI::Separator();
+        UI::Dummy(vec2(1, 6));
+        UI::TextWrapped("Thanks for checking out Event Calendar — your support helps keep the plugin maintained and improved. Report issues or open a PR on GitHub to contribute.");
+
     }
     UI::End();
 }

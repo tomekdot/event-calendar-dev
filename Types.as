@@ -11,4 +11,5 @@ class UIState {
     int CalMonth = 0;
     int SelectedDay = 0;
     bool ShowCalendarWindow = true;
+    bool ShowSupportWindow = false;
 }
