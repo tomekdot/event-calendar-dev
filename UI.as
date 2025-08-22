@@ -166,10 +166,6 @@ void RenderCalendarWindow() {
 void RenderSupportWindow() {
     UI::SetNextWindowSize(350, 250, UI::Cond::FirstUseEver);
     if (UI::Begin(Icons::Heart + " Support Project", g_UIState.ShowSupportWindow)) {
-
-        // ensure fonts are initialized
-        // Fonts::LoadFonts(); // This line can be removed as it's no longer needed
-
         UI::Dummy(vec2(1, 6));
         UI::PushFontSize(20.0);
         UI::Text("Event Calendar");
