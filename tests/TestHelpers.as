@@ -1,5 +1,4 @@
 namespace TestHelpers {
-
     class TestResult {
         string name;
         bool passed;
