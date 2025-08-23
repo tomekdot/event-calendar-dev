@@ -185,16 +185,7 @@ void RenderSupportWindow() {
         UI::TextDisabled("Author: " + "tomekdot");
         UI::TextDisabled("Team: " + "vitalism-creative");
         UI::Dummy(vec2(1, 8));
-
-        UI::Text("How you can help:");
-        UI::Indent(8);
-        UI::Text(Icons::Bug + "  Report bugs & issues on GitHub");
-        UI::Text(Icons::LightbulbO + "  Suggest features or improvements");
-        UI::Text(Icons::Code + "  Contribute code or PRs");
-        UI::Text(Icons::Users + "  Join the community on Discord");
-        UI::Unindent(8);
-        UI::Dummy(vec2(1, 8));
-
+        
         UI::PushStyleColor(UI::Col::Button, vec4(0.0, 0.439, 0.729, 1.0));
         UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.0, 0.357, 0.608, 1.0));
         if (UI::Button(Icons::Paypal + " Donate", vec2(-1, 0))) {
