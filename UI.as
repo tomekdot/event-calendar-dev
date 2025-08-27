@@ -50,9 +50,9 @@ void RenderCalendarHeader() {
         dateChanged = true;
     }
 
-    UI::SameLine(0, 15);
+    UI::SameLine(0, 8);
     UI::Text(UIHelpers::GetMonthName(g_UIState.CalMonth) + " " + tostring(g_UIState.CalYear));
-    UI::SameLine(0, 15);
+    UI::SameLine(0, 8);
 
     if (UI::Button(">")) {
         g_UIState.CalMonth++;
@@ -103,7 +103,7 @@ void RenderCalendarGrid() {
                 }
             }
             
-            if (UI::Button(tostring(dayCounter), vec2(-1, 25))) { 
+            if (UI::Button(tostring(dayCounter), vec2(-1, 34))) { 
                 g_UIState.SelectedDay = dayCounter; 
             }
             
@@ -171,21 +171,15 @@ void RenderSupportWindow() {
         UI::Text("Event Calendar");
         UI::PopFont();
 
-        UI::PushFontSize(14.0);
-        UI::Text("Moon phase tracking for Trackmania");
+        UI::PushFontSize(13.0);
+        UI::TextWrapped("Track moon phases and plan in-game events for Pursuit Channel. Your support keeps the plugin up-to-date.");
         UI::PopFont();
 
-        UI::Dummy(vec2(1, 6));
-
-        UI::PushFontSize(14.0);
-        UI::TextWrapped("Event Calendar tracks moon phases, shows notifications and helps you plan in-game events. If you like this plugin, your feedback and contributions keep it maintained and improving.");
-        UI::PopFont();
+        UI::Dummy(vec2(1, 8));
+        UI::Text("Author: tomekdot");
+        UI::Text("Team: vitalism-creative");
         UI::Dummy(vec2(1, 8));
 
-        UI::TextDisabled("Author: " + "tomekdot");
-        UI::TextDisabled("Team: " + "vitalism-creative");
-        UI::Dummy(vec2(1, 8));
-        
         UI::PushStyleColor(UI::Col::Button, vec4(0.0, 0.439, 0.729, 1.0));
         UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.0, 0.357, 0.608, 1.0));
         if (UI::Button(Icons::Paypal + " Donate", vec2(-1, 0))) {
@@ -198,7 +192,7 @@ void RenderSupportWindow() {
 
         UI::PushStyleColor(UI::Col::Button, vec4(0.2, 0.2, 0.2, 1.0));
         UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.3, 0.3, 0.3, 1.0));
-        if (UI::Button(Icons::Github + " View on GitHub", vec2(-1, 0))) {
+        if (UI::Button(Icons::Github + " GitHub", vec2(-1, 0))) {
             if (S_SupportGithubUrl.Length > 0) OpenBrowserURL(S_SupportGithubUrl);
             else UI::ShowNotification("Event Calendar", "No GitHub link available!", vec4(0.5, 0.5, 0.8, 1.0), 3000);
         }
@@ -208,7 +202,7 @@ void RenderSupportWindow() {
 
         UI::PushStyleColor(UI::Col::Button, vec4(0.345, 0.396, 0.949, 1.0));
         UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.267, 0.318, 0.871, 1.0));
-        if (UI::Button(Icons::DiscordAlt + " Join Discord", vec2(-1, 0))) {
+        if (UI::Button(Icons::DiscordAlt + " Discord", vec2(-1, 0))) {
             if (S_SupportDiscordUrl.Length > 0) OpenBrowserURL(S_SupportDiscordUrl);
             else UI::ShowNotification("Event Calendar", "No Discord link available!", vec4(0.5, 0.5, 0.8, 1.0), 3000);
         }
@@ -217,8 +211,6 @@ void RenderSupportWindow() {
         UI::Dummy(vec2(1, 10));
         UI::Separator();
         UI::Dummy(vec2(1, 6));
-        UI::TextWrapped("Thanks for checking out Event Calendar — your support helps keep the plugin maintained and improved. Report issues or open a PR on GitHub to contribute.");
-
     }
     UI::End();
 }
