@@ -103,7 +103,7 @@ void RenderCalendarGrid() {
                 }
             }
             
-            if (UI::Button(tostring(dayCounter), vec2(-1, 34))) { 
+            if (UI::Button(tostring(dayCounter), vec2(-1, 28))) { 
                 g_UIState.SelectedDay = dayCounter; 
             }
             
