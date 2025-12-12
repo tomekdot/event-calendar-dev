@@ -219,7 +219,7 @@ void RenderCalendarWindow() {
         auto spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
         auto winPad = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
         float btnH = UI::GetTextLineHeight() + fp.y * 2.0f;
-        vec2 btnNav = vec2(btnH * 1.75f, btnH);
+        vec2 btnNav = vec2(btnH * 1.68f, btnH);
         string monthYear = UIHelpers::GetMonthName(g_UIState.CalMonth) + " " + tostring(g_UIState.CalYear);
         float labelW = Draw::MeasureString(monthYear).x;
         float minContentW = btnNav.x * 4.0f + spacing.x * 4.0f + labelW;
