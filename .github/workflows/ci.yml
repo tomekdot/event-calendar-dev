@@ -1,6 +1,6 @@
 name: CI
 permissions:
-  contents: read
+    contents: read
 
 on:
     push:
@@ -19,18 +19,18 @@ jobs:
             - name: Build plugin (.op)
               shell: pwsh
               run: |
-                  $ErrorActionPreference = 'Stop'
-                  Write-Host "Running build-op.ps1 (includes tests)"
-                  .\build-op.ps1 -IncludeTests
+                $ErrorActionPreference = 'Stop'
+                Write-Host "Running tools/build-op.ps1 (includes tests)"
+                .\tools\build-op.ps1 -IncludeTests
 
             - name: Verify artifact
               shell: pwsh
               run: |
-                  Write-Host "Running tools/verify-release.ps1"
-                  .\tools\verify-release.ps1
+                Write-Host "Running tools/verify-release.ps1"
+                .\tools\verify-release.ps1
 
             - name: Upload .op artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: event-calendar-op
-                  path: event-calendar-dev.op
+                name: event-calendar-op
+                path: event-calendar-dev.op

@@ -36,7 +36,7 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 - A PowerShell build script is included. From the plugin root, run:
 
   ```powershell
-  pwsh -NoProfile -ExecutionPolicy Bypass -File ./build-op.ps1
+  pwsh -NoProfile -ExecutionPolicy Bypass -File ./tools/build-op.ps1
   ```
 
   Use `-IncludeTests` to include the `tests/` folder in the produced package (useful for debugging).
@@ -56,7 +56,7 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 ## 📁 Files of interest
 
 - `info.toml` — plugin metadata used by Openplanet
-- `build-op.ps1` — build script that produces the `.op` package
+- `tools/build-op.ps1` — build script that produces the `.op` package
 - `tools/verify-release.ps1` — artifact verification helper
 - `tests/` — lightweight test harness
 
