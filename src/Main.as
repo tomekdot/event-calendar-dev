@@ -69,8 +69,8 @@ void NotificationMonitorCoroutine() {
         if (!g_InitialNotificationsShown) {
             sleep(5000); 
         }
+        
         // After the initial notifications have been shown, this check will proceed without a delay.
-
         Notifications::ProcessAndShowNotifications();
         
         // Wait for one minute before the next check.
