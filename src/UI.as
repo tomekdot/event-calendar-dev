@@ -35,7 +35,7 @@ void RenderInterface() {
     if (S_RunHelpersTests) {
         S_RunHelpersTests = false;
         if (S_EnableDebug) {
-            // Tests removed
+            startnew(RunHelpersTests);
         } else {
             if (S_EnableNotifications) UI::ShowNotification("Moon Tests", "Helpers tests are disabled. Enable them in the advanced settings.", vec4(0.9, 0.6, 0.1, 1), 5000);
         }
