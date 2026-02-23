@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 - Initial public release.
 
-## 1.1.0 - 2025-12-12
+## 1.1.0 - 2026-02-22
 
 - UI: Standardized button sizing and unified navigation/day button heights for consistent scaling.
 - UI: Enforced minimum window width so date controls cannot be collapsed.
