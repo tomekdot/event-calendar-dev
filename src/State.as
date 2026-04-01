@@ -106,10 +106,10 @@ void RebuildMonthEventCache() {
 
 // A handle to the generic, default audio sample that is played for notifications.
 Audio::Sample@ g_moonSample = null;
-// A flag to track whether an attempt has been made to load g_moonSample. This prevents repeated load attempts on failure. */
+// A flag to track whether an attempt has been made to load g_moonSample. This prevents repeated load attempts on failure.
 bool g_moonTriedLoad = false;
 
-// An array to hold handles to audio samples for specific moon phases. Indexed by the PhaseKind enum. */
+// An array to hold handles to audio samples for specific moon phases. Indexed by the PhaseKind enum.
 array<Audio::Sample@> g_phaseSamples(PhaseKind::PK_COUNT);
-// A parallel array of flags to track whether a load attempt has been made for each specific phase sound. */
+// A parallel array of flags to track whether a load attempt has been made for each specific phase sound.
 array<bool> g_phaseTriedLoad(PhaseKind::PK_COUNT, false);

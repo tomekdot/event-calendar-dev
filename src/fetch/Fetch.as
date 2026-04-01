@@ -65,10 +65,6 @@ namespace Fetch {
     // --- Request Coalescing ---
     dictionary@ g_InFlightRequests = dictionary();      // url -> array of requestIDs
     dictionary@ g_PendingStarts = dictionary();         // url -> bool
-    dictionary@ g_LastStartTs = dictionary();           // url -> timestamp
-
-    // --- File Cache State ---
-    string g_LastFileCacheMonth = "";          // Track which month is in file cache
 
     // --- File Cache Operations ---
 
@@ -90,11 +86,11 @@ namespace Fetch {
         return GetCacheDir() + "/moon_" + tostring(year) + "_" + tostring(month) + ".json";
     }
 
-    // Save events to file cache
+    // Persists the current month payload so the calendar can recover instantly after restart.
     void SaveToFileCache(int year, int month, const array<EventItem@>@ events) {
         string filepath = GetCacheFilePath(year, month);
         
-        // Build JSON array
+        // Serialize only the fields the UI actually needs.
         Json::Value arr = Json::Array();
         for (uint i = 0; i < events.Length; i++) {
             auto@ ev = events[i];
@@ -111,12 +107,12 @@ namespace Fetch {
             arr.Add(item);
         }
         
-        // Add metadata
+        // Add minimal metadata used for expiry checks.
         Json::Value meta = Json::Object();
         meta["year"] = year;
         meta["month"] = month;
         meta["cachedAt"] = int64(Time::Stamp) * 1000;
-        // Also save as string to ensure precision in all parsers
+        // Store the timestamp twice to avoid precision loss in parsers that coerce large ints.
         meta["cachedAtStr"] = tostring(int64(Time::Stamp) * 1000);
         meta["events"] = arr;
         
@@ -129,11 +125,11 @@ namespace Fetch {
             warn("[Moon] Failed to write file cache: " + filepath);
         }
         
-        g_LastFileCacheMonth = tostring(year) + "-" + tostring(month);
         if (S_EnableDebug) trace("[Moon] Saved " + tostring(events.Length) + " events to file cache: " + filepath);
     }
 
-    // Load events from file cache, returns true if loaded successfully
+    // Loads a previously saved month snapshot. When ignoreExpiration is true we still
+    // accept stale data so the user can keep browsing offline.
     bool LoadFromFileCache(int year, int month, array<EventItem@>@ &out events, bool ignoreExpiration = false) {
         if (events is null) {
             @events = array<EventItem@>();
@@ -149,7 +145,7 @@ namespace Fetch {
             return false;
         }
         
-        // Read and parse JSON
+        // Read and parse JSON once; avoid extra filesystem work outside this branch.
         string json = "";
         try {
             IO::File f(filepath, IO::FileMode::Read);
@@ -170,7 +166,7 @@ namespace Fetch {
         
         if (root is null) return false;
         
-        // Check file age from cachedAt metadata
+        // Recover cache age from either the current string field or the legacy numeric field.
         int64 cachedAtMs = 0;
         if (root.HasKey("cachedAtStr")) {
              // Prefer string version if available (new format)
@@ -180,14 +176,12 @@ namespace Fetch {
              if (val.GetType() == Json::Type::String) {
                  cachedAtMs = Text::ParseInt64(string(val));
              } else {
-                 // Handle numbers (int/double) - convert via double to preserve 64-bit precision
-                 // avoiding 32-bit truncation from direct int casts in some environments
+                 // Convert through double to avoid 32-bit truncation in some Openplanet builds.
                  cachedAtMs = int64(double(val));
              }
         }
         
-        // If cachedAt is 0 or very old (before 2020), treat as expired
-        // Also handle case where timestamp is in the future (up to 1 week ahead)
+        // Reject missing/broken timestamps unless the caller explicitly asked for stale fallback.
         int64 currentMs = int64(Time::Stamp) * 1000;
         int64 maxFutureMs = 7 * 24 * 60 * 60 * 1000; // 1 week
         
@@ -255,48 +249,18 @@ namespace Fetch {
             }
         }
         
-        g_LastFileCacheMonth = tostring(year) + "-" + tostring(month);
         if (S_EnableDebug) trace("[Moon] Loaded " + tostring(events.Length) + " events from file cache");
         return events.Length > 0;
-    }
-
-    // Try to get events from any available cache (memory first, then file)
-    bool GetEventsFromAnyCache(int year, int month, array<EventItem@>@ &out events, bool &out isFresh) {
-        isFresh = false;
-        string url = BuildApiUrl(year, month, 1);
-        
-        // Try memory cache first
-        array<EventItem@>@ memCache = null;
-        if (GetCachedParsedEvents(url, memCache, true)) {
-            if (memCache !is null && memCache.Length > 0) {
-                events = memCache;
-                isFresh = true;
-                return true;
-            }
-        }
-        
-        // Try stale memory cache
-        if (GetCachedParsedEvents(url, memCache, true)) {
-            if (memCache !is null && memCache.Length > 0) {
-                events = memCache;
-                return true;
-            }
-        }
-        
-        // Try file cache
-        if (LoadFromFileCache(year, month, events)) {
-            return true;
-        }
-        
-        return false;
     }
 
     // --- L1 Cache Operations ---
 
     bool GetCachedResponse(const string &in url, string &out outBody) {
         if (!g_ResponseCacheBodies.Exists(url) || !g_ResponseCacheTs.Exists(url)) return false;
+
         int64 cachedTimestamp = int64(g_ResponseCacheTs[url]);
         int64 nowMs = int64(Time::Stamp) * 1000;
+
         if (nowMs - cachedTimestamp > FetchInternal::CACHE_TTL_MS) {
             g_ResponseCacheBodies.Delete(url);
             g_ResponseCacheTs.Delete(url);
@@ -313,12 +277,13 @@ namespace Fetch {
 
     // --- L2 Cache Operations ---
 
-    // Gets parsed events from cache. Returns true if fresh cache found.
-    // If useStale is true, also returns expired cache as fallback.
+    // Gets parsed events from memory cache. Returns true only for fresh entries.
+    // With useStale=true, outEvents may still be populated with stale data for instant UI fallback.
     bool GetCachedParsedEvents(const string &in url, array<EventItem@>@ &out outEvents, bool useStale = false) {
         if (!g_ParsedCacheEvents.Exists(url) || !g_ParsedCacheTs.Exists(url)) return false;
 
         int64 cachedTimestamp = 0;
+        
         try { cachedTimestamp = int64(g_ParsedCacheTs[url]); } catch {
             g_ParsedCacheEvents.Delete(url);
             g_ParsedCacheTs.Delete(url);
@@ -351,7 +316,7 @@ namespace Fetch {
             return false;
         }
 
-        // Create a copy of the cached events (fix null pointer access)
+        // Return a detached array so callers can safely sort/filter without mutating cache state.
         array<EventItem@> copy;
         for (uint i = 0; i < stored.Length; i++) {
             if (stored[i] !is null) {
@@ -395,9 +360,13 @@ namespace Fetch {
         return Helpers::AppendQueryParam(baseUrl + "?date=" + dateStr, "nump", tostring(numPhases));
     }
 
+    string GetCurrentCalendarUrl() {
+        return BuildApiUrl(g_UIState.CalYear, g_UIState.CalMonth, 1);
+    }
+
     // --- Debounce Helper ---
 
-    // Returns true if the fetch should be skipped due to debouncing.
+    // Rejects bursts of identical navigation requests before we spin up another coroutine.
     bool ShouldDebounce(const string &in url) {
         int64 nowMs = int64(Time::Stamp) * 1000;
 
@@ -421,6 +390,118 @@ namespace Fetch {
     }
 
     // --- Core Fetch Logic ---
+
+    void _CleanupRequestState(const string &in url, bool clearPendingStart = false) {
+        if (clearPendingStart && g_PendingStarts.Exists(url)) {
+            g_PendingStarts.Delete(url);
+        }
+        if (g_InFlightRequests.Exists(url)) {
+            g_InFlightRequests.Delete(url);
+        }
+    }
+
+    void _FinishFetchState(bool isInitialFetch) {
+        if (!isInitialFetch) {
+            g_IsLoading = false;
+        }
+    }
+
+    void _ClearPendingStart(const string &in url) {
+        if (g_PendingStarts.Exists(url)) {
+            g_PendingStarts.Delete(url);
+        }
+    }
+
+    void _ApplyEvents(const array<EventItem@>@ events, bool persistToFile = false) {
+        UpdateEventsAndCache(events, persistToFile);
+        HandleCalendarFetchSuccess();
+    }
+
+    bool _TryApplyMemoryCache(const string &in url, bool allowStale = true) {
+        array<EventItem@>@ cached = null;
+        bool isFresh = GetCachedParsedEvents(url, cached, allowStale);
+        if (cached is null || cached.Length == 0) {
+            return false;
+        }
+
+        if (S_EnableDebug) {
+            string cacheType = isFresh ? "fresh" : "stale";
+            trace("[Moon] Using " + cacheType + " memory cache for: " + url);
+        }
+
+        _ApplyEvents(cached, false);
+        if (!isFresh) {
+            StartFetchCoroutine(url, false);
+        }
+        return true;
+    }
+
+    bool _TryApplyFileCacheForCurrentMonth(bool ignoreExpiration = false) {
+        if (g_UIState.CalYear == 0 || g_UIState.CalMonth == 0) {
+            return false;
+        }
+
+        try {
+            array<EventItem@> fileCacheEvents;
+            if (!LoadFromFileCache(g_UIState.CalYear, g_UIState.CalMonth, fileCacheEvents, ignoreExpiration)) {
+                return false;
+            }
+
+            if (S_EnableDebug) {
+                trace("[Moon] Using file cache for: " + tostring(g_UIState.CalMonth) + "/" + tostring(g_UIState.CalYear));
+            }
+
+            _ApplyEvents(fileCacheEvents, false);
+            return true;
+        } catch {
+            warn("[Moon] Error loading from file cache");
+            return false;
+        }
+    }
+
+    void _ClearCurrentCalendarEvents() {
+        g_Events.Resize(0);
+        RebuildMonthEventCache();
+    }
+
+    void _SetApiErrorFromCode(int httpCode) {
+        if (httpCode == -1) {
+            g_ApiError = "Connection lost.";
+        } else if (httpCode == 0) {
+            g_ApiError = "Network unavailable.";
+        } else {
+            g_ApiError = "Server error (HTTP " + tostring(httpCode) + ").";
+        }
+    }
+
+    void _HandleFetchFailure(const string &in url, int httpCode, bool isInitialFetch) {
+        if (S_EnableDebug) {
+            trace("[Moon] Fetch failed after retries: HTTP " + tostring(httpCode));
+        }
+
+        _SetApiErrorFromCode(httpCode);
+
+        if (S_EnableNotifications) {
+            UI::ShowNotification("Moon Calendar", g_ApiError, vec4(1, 0.5, 0, 1), 3000);
+        }
+
+        array<EventItem@>@ staleCache = null;
+        if (GetCachedParsedEvents(url, staleCache, true) && staleCache !is null && staleCache.Length > 0) {
+            if (S_EnableDebug) trace("[Moon] Using stale memory cache after fetch failure");
+            _ApplyEvents(staleCache, false);
+        } else {
+            _TryApplyFileCacheForCurrentMonth(true);
+        }
+
+        _NotifyWaiters(url);
+        _CleanupRequestState(url);
+
+        if (!g_PendingStarts.Exists(url)) {
+            if (S_EnableDebug) trace("[Moon] Scheduling automatic retry for: " + url);
+            sleep(2000);
+            StartFetchCoroutine(url, isInitialFetch);
+        }
+    }
 
     void StartFetchCoroutine(const string &in url, bool isInitial) {
         if (ShouldDebounce(url)) return;
@@ -448,7 +529,6 @@ namespace Fetch {
 
         int64 nowMs = int64(Time::Stamp) * 1000;
         g_PendingStarts[url] = true;
-        g_LastStartTs[url] = nowMs;
         FetchInternal::g_LastGlobalFetchStartMs = nowMs;
         FetchInternal::g_LastGlobalFetchUrl = url;
 
@@ -474,61 +554,27 @@ namespace Fetch {
     void FetchLatestData() {
         if (!S_EnableMoon) return;
         Time::Info currentTime = Time::Parse(Time::Stamp);
+
         // Always fetch from the 1st of the current month so we don't miss early phases
         StartFetchCoroutine(BuildApiUrl(currentTime.Year, currentTime.Month, 1), true);
     }
 
     void FetchForCalendarView() {
-        string url = BuildApiUrl(g_UIState.CalYear, g_UIState.CalMonth, 1);
+        string url = GetCurrentCalendarUrl();
 
-        // Try cache first - use stale cache as fallback
-        array<EventItem@>@ cached = null;
-        bool isFreshCache = GetCachedParsedEvents(url, cached, true);
-
-        if (cached !is null && cached.Length > 0) {
-            if (S_EnableDebug) {
-                string cacheType = isFreshCache ? "fresh" : "stale";
-                trace("[Moon] Using " + cacheType + " memory cache for: " + url);
-            }
-            UpdateEventsAndCache(cached);
-            HandleCalendarFetchSuccess();
-
-            // If cache is stale, refresh in background
-            if (!isFreshCache) {
-                StartFetchCoroutine(url, false);
-            }
+        // Memory cache is the fastest path for month switching.
+        if (_TryApplyMemoryCache(url, true)) {
             return;
         }
 
-        // Try file cache as fallback (only if UI state is initialized)
-        bool fileCacheLoaded = false;
-        if (g_UIState.CalYear != 0 && g_UIState.CalMonth != 0) {
-            try {
-                array<EventItem@> fileCacheEvents;
-                if (LoadFromFileCache(g_UIState.CalYear, g_UIState.CalMonth, fileCacheEvents)) {
-                    fileCacheLoaded = true;
-                    if (S_EnableDebug) trace("[Moon] Using file cache for: " + tostring(g_UIState.CalMonth) + "/" + tostring(g_UIState.CalYear));
-                    UpdateEventsAndCache(fileCacheEvents);
-                    
-                    // Do NOT poison the memory cache with file cache data if we suspect it might be partial/outdated
-                    // especially since the file cache doesn't store the URL used to fetch it.
-                    // But we DO want to use it for immediate display.
-                    // SetCachedParsedEvents(url, fileCacheEvents); 
-                    
-                    HandleCalendarFetchSuccess();
-
-                    // Try to refresh in background
-                    StartFetchCoroutine(url, false);
-                    return;
-                }
-            } catch {
-                warn("[Moon] Error loading from file cache");
-            }
+        // File cache is still fast enough to keep the UI responsive while network refresh happens later.
+        if (_TryApplyFileCacheForCurrentMonth(false)) {
+            StartFetchCoroutine(url, false);
+            return;
         }
 
-        // No valid cache - clear calendar and fetch from network
-        g_Events.Resize(0);
-        RebuildMonthEventCache();
+        // No cache available for this month, so clear the view and fetch asynchronously.
+        _ClearCurrentCalendarEvents();
         
         if (S_EnableMoon) {
             StartFetchCoroutine(url, false);
@@ -537,7 +583,7 @@ namespace Fetch {
         }
     }
 
-    // Forces a fetch even if cache exists (for manual refresh)
+    // Manual refresh keeps current month selected but clears failure cooldown state first.
     void RefreshCalendarData() {
         // Clear consecutive failures to allow fresh retry
         FetchInternal::g_ConsecutiveFailures = 0;
@@ -545,19 +591,21 @@ namespace Fetch {
         FetchForCalendarView();
     }
 
-    // Background auto-retry for failed fetches (call periodically)
+    // Background auto-retry keeps the calendar alive after temporary connectivity issues.
     void AutoRetryFailedFetches() {
+        // Auto-retry is only enabled when the feature is enabled and we have seen at least one failure, to avoid unnecessary work on stable connections.
         if (!FetchInternal::g_AutoRetryEnabled) return;
         if (!S_EnableMoon) return;
-
         int64 nowMs = int64(Time::Stamp) * 1000;
+        // Rate-limit auto-retries to avoid hammering the endpoint during extended outages.
         if (nowMs - FetchInternal::g_LastAutoRetryMs < FetchInternal::AUTO_RETRY_INTERVAL_MS) return;
+
         FetchInternal::g_LastAutoRetryMs = nowMs;
 
         // Only retry if we have some failures but not too many
         if (FetchInternal::g_ConsecutiveFailures > 0 && FetchInternal::g_ConsecutiveFailures < FetchInternal::MAX_CONSECUTIVE_FAILURES) {
             if (g_UIState.CalYear != 0 && g_UIState.CalMonth != 0) {
-                string url = BuildApiUrl(g_UIState.CalYear, g_UIState.CalMonth, 1);
+                string url = GetCurrentCalendarUrl();
                 if (!g_PendingStarts.Exists(url) && !g_InFlightRequests.Exists(url)) {
                     if (S_EnableDebug) trace("[Moon] Auto-retry fetch for: " + url);
                     StartFetchCoroutine(url, false);
@@ -568,8 +616,7 @@ namespace Fetch {
 
     // --- Fetch Network Layer ---
 
-    // Performs HTTP request with automatic retries for connection issues.
-    // Returns true on success, false on permanent failure.
+    // Performs HTTP request with capped exponential backoff.
     bool FetchWithAutoRetry(const string &in url, string &out outBody) {
         int lastCode = -1;
         int64 retryStartTime = int64(Time::Stamp) * 1000;
@@ -577,7 +624,7 @@ namespace Fetch {
         int consecutiveNetErrors = 0;
 
         while (attempt <= FetchInternal::MAX_RETRY_ATTEMPTS) {
-            // Check for consecutive failure cooldown
+            // After too many failures, pause briefly instead of hammering the endpoint every frame.
             if (FetchInternal::g_ConsecutiveFailures >= FetchInternal::MAX_CONSECUTIVE_FAILURES) {
                 int64 cooldownMs = 30 * 1000; // 30 second cooldown after too many failures
                 int64 timeSinceFailure = (int64(Time::Stamp) * 1000) - FetchInternal::g_LastFailureMs;
@@ -604,7 +651,7 @@ namespace Fetch {
             FetchInternal::g_ConsecutiveFailures++;
             FetchInternal::g_LastFailureMs = int64(Time::Stamp) * 1000;
 
-            // Determine if this is retryable
+            // Retry rate-limit, transient network and server-side failures.
             bool isRetryable = (lastCode == -1 || lastCode == 0 || lastCode == 429 || lastCode >= 500);
 
             if (!isRetryable && lastCode >= 400 && lastCode < 500) {
@@ -613,7 +660,7 @@ namespace Fetch {
                 break;
             }
 
-            // Calculate backoff - more aggressive for network errors
+            // Network failures get steeper backoff because they often persist longer.
             int backoffMs;
             if (lastCode == -1 || lastCode == 0) {
                 // Network error - use longer backoff
@@ -645,7 +692,7 @@ namespace Fetch {
     }
 
     string FetchResponseWithRetries(const string &in url, int &out outCode) {
-        // Try cache first
+        // Raw body cache avoids repeated JSON downloads for identical URLs.
         string cachedBody;
         if (GetCachedResponse(url, cachedBody)) {
             outCode = 200;
@@ -677,10 +724,10 @@ namespace Fetch {
             return;
         }
 
-        if (g_PendingStarts.Exists(url)) g_PendingStarts.Delete(url);
+        _ClearPendingStart(url);
         if (!isInitialFetch) g_IsLoading = true;
 
-        // L2 cache check - use stale cache as fallback
+        // Fast path: if parsed data is already cached, update the UI immediately.
         array<EventItem@>@ cachedParsed = null;
         bool isFreshCache = GetCachedParsedEvents(url, cachedParsed, true);
 
@@ -690,10 +737,13 @@ namespace Fetch {
                 trace("[Moon] " + cacheType + " cache hit: " + url + " (" + cachedParsed.Length + " events)");
             }
 
-            if (requestID != FetchInternal::g_FetchRequestID) return;
+            if (requestID != FetchInternal::g_FetchRequestID) {
+                _FinishFetchState(isInitialFetch);
+                return;
+            }
 
-            UpdateEventsAndCache(cachedParsed);
-            if (!isInitialFetch) g_IsLoading = false;
+            UpdateEventsAndCache(cachedParsed, false);
+            _FinishFetchState(isInitialFetch);
 
             if (isInitialFetch) HandleInitialFetchSuccess();
             else HandleCalendarFetchSuccess();
@@ -706,7 +756,7 @@ namespace Fetch {
             return;
         }
 
-        // Coalesce with in-flight requests
+        // Coalesce concurrent requests for the same URL so only one network call is ever active.
         if (g_InFlightRequests.Exists(url)) {
             array<uint>@ waitList = cast<array<uint>@>(g_InFlightRequests[url]);
             if (waitList is null) {
@@ -724,59 +774,17 @@ namespace Fetch {
         int httpCode = -1;
         string body = FetchResponseWithRetries(url, httpCode);
 
-        // Staleness check
-        if (requestID != FetchInternal::g_FetchRequestID) return;
-        if (!isInitialFetch) g_IsLoading = false;
+        // Ignore obsolete responses, but always release request state first.
+        if (requestID != FetchInternal::g_FetchRequestID) {
+            _CleanupRequestState(url);
+            _FinishFetchState(isInitialFetch);
+            return;
+        }
+        _FinishFetchState(isInitialFetch);
 
-        // Handle errors - schedule automatic retry
+        // Errors fall back to stale cache so calendar navigation stays usable offline.
         if (httpCode != 200) {
-            if (S_EnableDebug) trace("[Moon] Fetch failed after retries: HTTP " + tostring(httpCode));
-
-            // Set error message
-            if (httpCode == -1) {
-                g_ApiError = "Connection lost.";
-            } else if (httpCode == 0) {
-                g_ApiError = "Network unavailable.";
-            } else {
-                g_ApiError = "Server error (HTTP " + tostring(httpCode) + ").";
-            }
-
-            // Show less intrusive notification
-            if (S_EnableNotifications) {
-                UI::ShowNotification("Moon Calendar", g_ApiError, vec4(1, 0.5, 0, 1), 3000);
-            }
-
-            // Check if we have stale cache to use
-            array<EventItem@>@ staleCache = null;
-            bool isFresh = false;
-            if (GetCachedParsedEvents(url, staleCache, true) && staleCache !is null && staleCache.Length > 0) {
-                if (S_EnableDebug) trace("[Moon] Using stale memory cache after fetch failure");
-                UpdateEventsAndCache(staleCache);
-                if (!isInitialFetch) g_IsLoading = false;
-                HandleCalendarFetchSuccess();
-            } else {
-                // Try file cache (only if UI state is initialized)
-                if (g_UIState.CalYear != 0 && g_UIState.CalMonth != 0) {
-                    try {
-                        array<EventItem@> fileCacheEvents;
-                        if (LoadFromFileCache(g_UIState.CalYear, g_UIState.CalMonth, fileCacheEvents, true)) {
-                            if (S_EnableDebug) trace("[Moon] Using file cache after fetch failure");
-                            UpdateEventsAndCache(fileCacheEvents);
-                            if (!isInitialFetch) g_IsLoading = false;
-                            HandleCalendarFetchSuccess();
-                        }
-                    } catch {
-                        warn("[Moon] Error loading from file cache in FetchCoroutine");
-                    }
-                }
-            }
-
-            // Schedule automatic retry if not already pending
-            if (!g_PendingStarts.Exists(url) && !g_InFlightRequests.Exists(url)) {
-                if (S_EnableDebug) trace("[Moon] Scheduling automatic retry for: " + url);
-                sleep(2000);
-                StartFetchCoroutine(url, isInitialFetch);
-            }
+            _HandleFetchFailure(url, httpCode, isInitialFetch);
             return;
         }
 
@@ -785,6 +793,8 @@ namespace Fetch {
         try { @root = Json::Parse(body); } catch {
             string preview = body.Length > 200 ? body.SubStr(0, 200) + "..." : body;
             error(Moon::kLogTag + " JSON parse error: " + preview);
+            _NotifyWaiters(url);
+            _CleanupRequestState(url);
             if (S_EnableNotifications) {
                 UI::ShowNotification("Moon Calendar Error", "Invalid server data", vec4(1, 0, 0, 1), 6000);
             }
@@ -794,26 +804,10 @@ namespace Fetch {
         ProcessApiResponse(root, isInitialFetch);
         SetCachedParsedEvents(url, g_Events);
         _NotifyWaiters(url);
+        _CleanupRequestState(url);
     }
 
     // --- Success Handling ---
-
-    void _HandleFetchSuccess(const array<EventItem@>@ events, bool isInitial, uint requestID) {
-        UpdateEventsAndCache(events);
-        if (!isInitial) g_IsLoading = false;
-
-        if (isInitial) HandleInitialFetchSuccess();
-        else HandleCalendarFetchSuccess();
-
-        string key = tostring(requestID);
-        if (g_FetchHandlers.Exists(key)) {
-            FetchSuccessHandler@ handler = cast<FetchSuccessHandler>(g_FetchHandlers[key]);
-            if (handler !is null) {
-                try { handler(@g_Events, isInitial); } catch { warn("[Moon] Handler exception"); }
-            }
-            g_FetchHandlers.Delete(key);
-        }
-    }
 
     void _NotifyWaiters(const string &in url) {
         if (!g_InFlightRequests.Exists(url)) return;
@@ -840,6 +834,7 @@ namespace Fetch {
 
     // --- API Response Processing ---  
 
+    // Parses raw JSON response into EventItem objects, skipping invalid entries and deduplicating by ID.
     void ParsePhaseData(Json::Value@ root, array<EventItem@>@ local_events) {
         if (root is null || !root.HasKey("phasedata") || root["phasedata"].GetType() != Json::Type::Array) return;
 
@@ -888,8 +883,8 @@ namespace Fetch {
         else HandleCalendarFetchSuccess();
     }
 
-    // Updates calendar events and rebuilds month cache
-    void UpdateEventsAndCache(const array<EventItem@>@ local_events) {
+    // Replaces the visible event list, optionally persists it, then rebuilds the per-day lookup cache.
+    void UpdateEventsAndCache(const array<EventItem@>@ local_events, bool persistToFile = true) {
         if (local_events is null) g_Events = array<EventItem@>();
         else g_Events = local_events;
 
@@ -898,6 +893,7 @@ namespace Fetch {
             trace("[Moon] UpdateEventsAndCache: g_Events=" + tostring(g_Events.Length));
         }
 
+        // Debug dump of first few events to verify parsing without needing to set breakpoints or inspect variables.
         if (S_EnableDebug && g_Events.Length > 0) {
             int limit = g_Events.Length < 5 ? int(g_Events.Length) : 5;
             for (int di = 0; di < limit; di++) {
@@ -917,8 +913,8 @@ namespace Fetch {
             g_LastFetchedMonth = g_UIState.CalMonth;
         }
 
-        // Save to file cache for persistence across restarts
-        if (g_UIState.CalYear != 0 && g_UIState.CalMonth != 0 && g_Events.Length > 0) {
+        // Only fresh network results need to hit disk. Cache hits should stay memory-only.
+        if (persistToFile && g_UIState.CalYear != 0 && g_UIState.CalMonth != 0 && g_Events.Length > 0) {
             try { SaveToFileCache(g_UIState.CalYear, g_UIState.CalMonth, g_Events); } catch {}
         }
 

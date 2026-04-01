@@ -31,6 +31,12 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 - Copy the `event-calendar-dev` folder into `Openplanet4/Plugins/` or install the generated `.op` package.
 - Enable the plugin in Openplanet's plugin list.
 
+## 🗂️ Cache files
+
+- The plugin creates local cache files in a `cache/` folder to speed up calendar loading.
+- These files are temporary and may be recreated automatically after the next data fetch.
+- You can safely clear the `cache/` folder if you want to remove old cached data or force a clean refresh.
+
 ## 🛠️ Build
 
 - A PowerShell build script is included. From the plugin root, run:
