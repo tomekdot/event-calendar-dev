@@ -1,13 +1,16 @@
 /*
+ * =============================================================================
  * @namespace Helpers
  * A collection of generic, low-level utility functions used across the plugin.
  * This includes functions for date/time conversion, URL manipulation, and string parsing.
+ * These functions are designed to be reusable and do not depend on any specific plugin state or UI logic.
+ * =============================================================================
  */
 namespace Helpers {
     // A flag to prevent spamming the log with the same warning about null events.
     bool g_HasLoggedNullEvent = false;
     // A global flag to enable/disable verbose debug logging throughout the plugin.
-    bool g_DebugEnabled = false;
+    bool g_DebugEnabled       = false;
 
     /*
      * Sets the global debug flag, which controls verbose logging in certain functions.
@@ -25,11 +28,11 @@ namespace Helpers {
      */
     int _DaysFromCivil(int year, int month, int day) {
         int year_adjusted = year - (month <= 2 ? 1 : 0);
-        int era = (year_adjusted >= 0 ? year_adjusted : year_adjusted - 399) / 400;                     // 400-year era
-        int year_of_era = year_adjusted - era * 400;                                                    // Year of era
+        int era           = (year_adjusted >= 0 ? year_adjusted : year_adjusted - 399) / 400;                     // 400-year era
+        int year_of_era   = year_adjusted - era * 400;                                                    // Year of era
         int month_of_year = month + (month > 2 ? -3 : 9);                                             // Month of year
-        int day_of_year = (153 * month_of_year + 2) / 5 + day - 1;                                    // Day of year
-        int day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;       // Day of era
+        int day_of_year   = (153 * month_of_year + 2) / 5 + day - 1;                                    // Day of year
+        int day_of_era    = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;       // Day of era
 
         return era * 146097 + day_of_era - 719468; // Total days, adjusted for epoch
     }
@@ -64,8 +67,8 @@ namespace Helpers {
         }
 
         // 1. Separate the base URL from the fragment (#)
-        int hashPos = url.IndexOf('#');
-        string base = url;
+        int    hashPos  = url.IndexOf('#');
+        string base     = url;
         string fragment = "";
         if (hashPos != -1) {
             base = url.SubStr(0, hashPos);
@@ -126,7 +129,7 @@ namespace Helpers {
         }
 
         // 1. Sanitize input and remove common UTC suffixes.
-        string t = timeStr.Trim();
+        string t  = timeStr.Trim();
         string tl = t.ToLower();
         const string[] suffixes = {" utc", " ut", "utc", "ut"};
         for (uint i = 0; i < suffixes.Length; i++) {

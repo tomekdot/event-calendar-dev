@@ -1,7 +1,11 @@
 /*
+/*
+ * =============================================================================
+ * @namespace Notifications
  * This namespace contains all functions and data related to managing and displaying notifications for moon events.
  * It handles showing notifications at startup for upcoming events, as well as timed notifications for events that are about to occur.
  * It also keeps track of which notifications have already been shown to avoid duplicates.
+ * =============================================================================
  */
 namespace Notifications {
     /*
@@ -24,9 +28,9 @@ namespace Notifications {
         int64 deltaMs = e.startMs - nowMs;
         
         // Create human-readable time strings.
-        int64 absDeltaMs = deltaMs < 0 ? -deltaMs : deltaMs;
+        int64  absDeltaMs        = deltaMs < 0 ? -deltaMs : deltaMs;
         string friendlyTimeDelta = TimeUtils::FriendlyDeltaLong(absDeltaMs);
-        string eventTimeUtc = Time::FormatStringUTC("%Y-%m-%d %H:%M UTC", e.startMs / 1000);
+        string eventTimeUtc      = Time::FormatStringUTC("%Y-%m-%d %H:%M UTC", e.startMs / 1000);
 
         // Build the status message based on whether the event is in the future or past.
         string status = deltaMs >= 0 
@@ -126,8 +130,8 @@ namespace Notifications {
      * @param nowMs The current time in milliseconds.
      */
     void ShowPendingNotifications(int64 nowMs) {
-        const int64 ONE_MINUTE_MS = 60 * 1000;
-        int64 notificationWindowMs = int64(S_NotifyMinutesBefore) * ONE_MINUTE_MS;
+        const int64 ONE_MINUTE_MS        = 60 * 1000;
+              int64 notificationWindowMs = int64(S_NotifyMinutesBefore) * ONE_MINUTE_MS;
 
         for (uint i = 0; i < g_Events.Length; i++) {
             auto@ e = g_Events[i];

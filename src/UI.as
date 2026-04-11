@@ -48,7 +48,7 @@ void RenderInterface() {
 void RenderCalendarHeader() {
     bool dateChanged = false;
 
-    auto fp = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+    auto  fp   = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
     float btnH = UI::GetTextLineHeight() + fp.y * 2.0f;
 
     // Use a table with 5 stretchable columns so each button reacts to window shrinking.
@@ -118,8 +118,8 @@ void RenderCalendarHeader() {
 void RenderCalendarGrid() {
     if (!UI::BeginTable("CalendarGrid", 7, UI::TableFlags::BordersInnerV)) return;
 
-    auto fp = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
-    float btnH = UI::GetTextLineHeight() + fp.y * 2.0f;
+    auto  fp      = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+    float btnH    = UI::GetTextLineHeight() + fp.y * 2.0f;
     float dayBtnH = btnH;
 
     // Setup table headers with day names
@@ -308,16 +308,16 @@ void RenderCalendarWindow() {
 void RenderAboutSupportWindow() {
     UI::SetNextWindowSize(420, 500, UI::Cond::FirstUseEver);
     if (UI::Begin(Icons::InfoCircle + " About & Support", S_ShowAboutSupport)) {
-        auto fp = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
-        auto spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
-        auto winPad = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
-        float btnH = UI::GetTextLineHeight() + fp.y * 2.0f;
+        auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+        auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
+        auto  winPad       = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
+        float btnH         = UI::GetTextLineHeight() + fp.y * 2.0f;
         float footerHeight = btnH + spacing.y;
 
         // --- WINDOW SIZE LOCK ---
         float minWindowW = 380.0f;
         float minWindowH = 450.0f;
-        vec2 ws = UI::GetWindowSize();
+        vec2  ws         = UI::GetWindowSize();
         if (ws.x < minWindowW || ws.y < minWindowH) {
             UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
         }
@@ -384,9 +384,9 @@ void RenderAboutSupportWindow() {
 
         // --- FOOTER ---
         UI::Separator();
-        string version = "v1.1.0-dev";
-        float versionW = UI::MeasureString(version).x;
-        float availWidth = UI::GetContentRegionAvail().x;
+        string version    = "v1.1.0-dev";
+        float  versionW   = UI::MeasureString(version).x;
+        float  availWidth = UI::GetContentRegionAvail().x;
         UI::SetCursorPosX(UI::GetCursorPos().x + availWidth - versionW);
         UI::TextDisabled(version);
     }

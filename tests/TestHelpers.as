@@ -1,7 +1,11 @@
 /*
+ * =============================================================================
  * @namespace TestHelpers
  * A lightweight, self-contained unit testing framework. It provides a simple assertion
  * context and a runner to execute test cases and summarize the results.
+ * Each test case is defined as a function that takes a `TestContext` object, which provides
+ * assertion methods. The framework collects results and prints a summary at the end.
+ * =============================================================================
  */
 namespace TestHelpers {
     /*
@@ -10,7 +14,7 @@ namespace TestHelpers {
      */
     class TestResult {
         string name;    // The name of the test case.
-        bool passed;    // True if the test passed, false otherwise.
+        bool   passed;  // True if the test passed, false otherwise.
         string message; // An error message if the test failed.
 
         TestResult(const string &in n, bool p, const string &in m) {
@@ -36,7 +40,7 @@ namespace TestHelpers {
      */
     class TestContext {
         string name;
-        bool failed = false;
+        bool   failed  = false;
         string failMsg = "";
 
         TestContext(const string &in n) { name = n; }

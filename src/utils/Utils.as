@@ -1,8 +1,11 @@
 /*
+ * =============================================================================
  * @namespace Moon
  * A collection of utility functions and constants related to moon phases.
  * This namespace handles formatting, abbreviations, enum conversions, and color coding.
+ * =============================================================================
  */
+
 namespace Moon {
     // The standard log tag for moon-related messages. 
     const string kLogTag = "[Moon]";
@@ -73,8 +76,10 @@ namespace Moon {
 }
 
 /*
+ * =============================================================================
  * @namespace TimeUtils
  * Provides helper functions for time and date manipulation and formatting.
+ * =============================================================================
  */
 namespace TimeUtils {
     /*
@@ -129,8 +134,10 @@ namespace TimeUtils {
 }
 
 /*
+ * =============================================================================
  * @namespace UIHelpers
  * Contains helper functions specifically for rendering and managing the calendar UI.
+ * =============================================================================
  */
 namespace UIHelpers {
     /*

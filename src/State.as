@@ -4,7 +4,7 @@
 // The number of milliseconds in one minute. 
 const int64 kOneMinuteMs = 60 * 1000;
 // The number of milliseconds in one hour. 
-const int64 kOneHourMs = 60 * kOneMinuteMs;
+const int64 kOneHourMs   = 60 * kOneMinuteMs;
 
 
 // --- Default Audio Asset Paths ---
@@ -14,17 +14,17 @@ const int64 kOneHourMs = 60 * kOneMinuteMs;
 // A constant holding the default relative path for notification sounds.
 const string kDefaultNotificationSound = "assets/sounds/moon-notification.wav";
 // The path for the generic, fallback moon sound.
-const string kMoonSoundRel     = kDefaultNotificationSound;
+const string kMoonSoundRel    = kDefaultNotificationSound;
 // The path for the New Moon sound. 
-const string kMoonSoundNMRel   = kDefaultNotificationSound;
+const string kMoonSoundNMRel  = kDefaultNotificationSound;
 // The path for the First Quarter sound. 
-const string kMoonSoundFQRel   = kDefaultNotificationSound;
+const string kMoonSoundFQRel  = kDefaultNotificationSound;
 // The path for the Full Moon sound. 
-const string kMoonSoundFMRel   = kDefaultNotificationSound;
+const string kMoonSoundFMRel  = kDefaultNotificationSound;
 // The path for the Last Quarter sound. 
-const string kMoonSoundLQRel   = kDefaultNotificationSound;
+const string kMoonSoundLQRel  = kDefaultNotificationSound;
 // The path for intermediate phase sounds (e.g., crescent, gibbous). 
-const string kMoonSoundINTRel  = kDefaultNotificationSound;
+const string kMoonSoundINTRel = kDefaultNotificationSound;
 
 
 // --- UI State ---
@@ -49,15 +49,15 @@ array<EventItem@> g_Events = array<EventItem@>();
 // --- Loading and Caching State ---
 
 // A flag that indicates whether a network request for calendar data is currently in progress. Used to display "Loading..." indicators.
-bool g_IsLoading = false;
+bool   g_IsLoading                 = false;
 // Stores the year of the last successful calendar data fetch. Used to prevent unnecessary API calls.
-int g_LastFetchedYear = 0;
+int    g_LastFetchedYear           = 0;
 // Stores the month of the last successful calendar data fetch. Used to prevent unnecessary API calls.
-int g_LastFetchedMonth = 0;
+int    g_LastFetchedMonth          = 0;
 // A flag to ensure that startup notifications are only shown once per application session.
-bool g_InitialNotificationsShown = false;
+bool   g_InitialNotificationsShown = false;
 // Stores the last API error message. Empty string means no error.
-string g_ApiError = "";
+string g_ApiError                  = "";
 
 
 // --- Month Event Cache ---
@@ -107,7 +107,7 @@ void RebuildMonthEventCache() {
 // A handle to the generic, default audio sample that is played for notifications.
 Audio::Sample@ g_moonSample = null;
 // A flag to track whether an attempt has been made to load g_moonSample. This prevents repeated load attempts on failure.
-bool g_moonTriedLoad = false;
+bool g_moonTriedLoad        = false;
 
 // An array to hold handles to audio samples for specific moon phases. Indexed by the PhaseKind enum.
 array<Audio::Sample@> g_phaseSamples(PhaseKind::PK_COUNT);
