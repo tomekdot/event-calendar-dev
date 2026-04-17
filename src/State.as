@@ -14,17 +14,17 @@ const int64 kOneHourMs   = 60 * kOneMinuteMs;
 // A constant holding the default relative path for notification sounds.
 const string kDefaultNotificationSound = "assets/sounds/moon-notification.wav";
 // The path for the generic, fallback moon sound.
-const string kMoonSoundRel    = kDefaultNotificationSound;
+const string kMoonSoundRel             = kDefaultNotificationSound;
 // The path for the New Moon sound. 
-const string kMoonSoundNMRel  = kDefaultNotificationSound;
+const string kMoonSoundNMRel           = kDefaultNotificationSound;
 // The path for the First Quarter sound. 
-const string kMoonSoundFQRel  = kDefaultNotificationSound;
+const string kMoonSoundFQRel  		   = kDefaultNotificationSound;
 // The path for the Full Moon sound. 
-const string kMoonSoundFMRel  = kDefaultNotificationSound;
+const string kMoonSoundFMRel   		   = kDefaultNotificationSound;
 // The path for the Last Quarter sound. 
-const string kMoonSoundLQRel  = kDefaultNotificationSound;
+const string kMoonSoundLQRel    	   = kDefaultNotificationSound;
 // The path for intermediate phase sounds (e.g., crescent, gibbous). 
-const string kMoonSoundINTRel = kDefaultNotificationSound;
+const string kMoonSoundINTRel 		   = kDefaultNotificationSound;
 
 
 // --- UI State ---
@@ -105,11 +105,11 @@ void RebuildMonthEventCache() {
 // --- Audio Sample Handles and State ---
 
 // A handle to the generic, default audio sample that is played for notifications.
-Audio::Sample@ g_moonSample = null;
+Audio::Sample@ g_moonSample    = null;
 // A flag to track whether an attempt has been made to load g_moonSample. This prevents repeated load attempts on failure.
-bool g_moonTriedLoad        = false;
+bool           g_moonTriedLoad = false;
 
 // An array to hold handles to audio samples for specific moon phases. Indexed by the PhaseKind enum.
 array<Audio::Sample@> g_phaseSamples(PhaseKind::PK_COUNT);
 // A parallel array of flags to track whether a load attempt has been made for each specific phase sound.
-array<bool> g_phaseTriedLoad(PhaseKind::PK_COUNT, false);
+array<bool>           g_phaseTriedLoad(PhaseKind::PK_COUNT, false);

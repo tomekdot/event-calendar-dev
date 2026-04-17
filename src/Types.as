@@ -29,28 +29,28 @@ enum PhaseKind {
  */
 class EventItem {
     // A unique identifier for the event (e.g., "USNO-FM-1673895600"). 
-    string id = "";
+    string id          = "";
     
     // The human-readable title of the event (e.g., "Full Moon"). 
-    string title = "";
+    string title       = "";
     
     // The start time of the event, represented as milliseconds since the Unix epoch (UTC). 
-    int64 startMs = 0;
+    int64  startMs     = 0;
 
     // Optional duration in seconds. 0 if unknown/instant. 
-    int durationSec = 0;
+    int    durationSec = 0;
 
     // Optional long description/content. 
     string description = "";
 
     // Optional link to external resource (event page, etc.). 
-    string url = "";
+    string url         = "";
 
     // Optional source label (e.g., where the event came from). 
-    string source = "";
+    string source      = "";
 
     // Optional game discriminator (if applicable). 
-    string game = "";
+    string game        = "";
 }
 
 /*
@@ -60,20 +60,20 @@ class EventItem {
  */
 class UIState {
     // The year currently being displayed in the calendar view.
-    int CalYear = 0;
+    int    CalYear             = 0;
 
     // The month currently being displayed in the calendar view (1 - 12).
-    int CalMonth = 0;
+    int    CalMonth            = 0;
 
     // The day of the month currently selected by the user in the calendar grid.
-    int SelectedDay = 0;
+    int    SelectedDay         = 0;
 
     // A flag to control the visibility of the main calendar window. 
-    bool ShowCalendarWindow = true;
+    bool   ShowCalendarWindow  = true;
 
     // A flag to control the visibility of the overlay calendar window. 
-    bool ShowOverlayCalendar = false;
+    bool   ShowOverlayCalendar = false;
 
     // Timestamp (ms) of the last time the user changed the calendar date. 
-    uint64 LastDateChangeMs = 0;
+    uint64 LastDateChangeMs    = 0;
 }

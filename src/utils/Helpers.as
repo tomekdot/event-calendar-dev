@@ -28,11 +28,11 @@ namespace Helpers {
      */
     int _DaysFromCivil(int year, int month, int day) {
         int year_adjusted = year - (month <= 2 ? 1 : 0);
-        int era           = (year_adjusted >= 0 ? year_adjusted : year_adjusted - 399) / 400;                     // 400-year era
-        int year_of_era   = year_adjusted - era * 400;                                                    // Year of era
-        int month_of_year = month + (month > 2 ? -3 : 9);                                             // Month of year
-        int day_of_year   = (153 * month_of_year + 2) / 5 + day - 1;                                    // Day of year
-        int day_of_era    = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;       // Day of era
+        int era           = (year_adjusted >= 0 ? year_adjusted : year_adjusted - 399) / 400;       // 400-year era
+        int year_of_era   = year_adjusted - era * 400;                                              // Year of era
+        int month_of_year = month + (month > 2 ? -3 : 9);                                           // Month of year
+        int day_of_year   = (153 * month_of_year + 2) / 5 + day - 1;                                // Day of year
+        int day_of_era    = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;  // Day of era
 
         return era * 146097 + day_of_era - 719468; // Total days, adjusted for epoch
     }
@@ -183,9 +183,9 @@ namespace Helpers {
             EventItem@ key = arr[i];
             int j = int(i) - 1;
             while (j >= 0) {
-                EventItem@ prev = arr[uint(j)];
-                int64 prevMs = prev is null ? 0 : prev.startMs;
-                int64 keyMs = key is null ? 0 : key.startMs;
+                EventItem@ prev   = arr[uint(j)];
+                int64      prevMs = prev is null ? 0 : prev.startMs;
+                int64      keyMs  = key is null ? 0 : key.startMs;
                 if (prevMs <= keyMs) break;
                 @arr[uint(j + 1)] = prev;
                 j--;
