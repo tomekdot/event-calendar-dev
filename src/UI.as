@@ -248,7 +248,7 @@ void RenderCalendarWindow() {
 
     // The 'if (UI::Begin(...))' pattern ensures that code is only run when the window is visible.
     if (UI::Begin("Moon Phase Calendar", g_UIState.ShowCalendarWindow)) {
-        // Minimum window size lock (blokada) for vertical stability.
+        // Minimum window size lock for vertical stability.
         // Horizontal shrinking is now handled by stretchable table columns.
         auto fp = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
         auto spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
@@ -337,7 +337,7 @@ void RenderAboutSupportWindow() {
         UI::TextWrapped("Event Calendar displays moon phases and helps plan in-game events. It can optionally notify you about upcoming phases and supports Pursuit Channel schedule parsing");
         UI::PopFontSize();
 
-        // --- SUPPORT SECTION (improved layout) ---
+        // --- SUPPORT SECTION ---
         UI::Dummy(vec2(1, 6));
 
         // Use a table with two columns: description and action button

@@ -4,11 +4,11 @@
  * This is used for logic, audio playback, and color coding.
  */
 enum PhaseKind {
-    PK_NM,      // New Moon
-    PK_FQ,      // First Quarter
-    PK_FM,      // Full Moon
-    PK_LQ,      // Last Quarter
-    PK_INT,     // Intermediate phase (e.g., Waxing Crescent, Waning Gibbous)
+    PK_NM,   // New Moon
+    PK_FQ,   // First Quarter
+    PK_FM,   // Full Moon
+    PK_LQ,   // Last Quarter
+    PK_INT,  // Intermediate phase (e.g., Waxing Crescent, Waning Gibbous)
     
     /*
      * A special member used to get the count of actual phase types.
