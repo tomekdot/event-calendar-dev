@@ -40,11 +40,10 @@ string S_MoonApiUrl = "https://aa.usno.navy.mil/api/moon/phases/date";
 bool S_AutoDate = true;
 
 /*
- * Specifies the number of moon phase events to request from the API in a single call.
- * A higher number means fewer API calls but a larger initial data payload.
+ * Fixed number of moon phase events to request from the API in a single call.
+ * Kept at 5 because that is enough for the plugin's current use.
  */
-[Setting category="Fetch" name="Phases to Fetch" description="Number of entries to request" min=4 max=99]
-int S_USNO_NumP = 20;
+const int S_USNO_NumP = 5;
 
 /*
  * The interval in seconds at which the plugin will automatically re-fetch data

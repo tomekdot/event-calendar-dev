@@ -13,7 +13,7 @@ namespace FetchInternal {
     // API Configuration
     // -------------------------------------------------------------------------
     const string API_BASE_URL       = "https://aa.usno.navy.mil/api/moon/phases/date";
-    const int    DEFAULT_NUM_PHASES = 50;
+    const int    DEFAULT_NUM_PHASES = 5;
 
     // -------------------------------------------------------------------------
     // Retry Configuration
@@ -141,7 +141,7 @@ namespace Fetch {
     void SaveToFileCache(int year, int month, const array<EventItem@>@ events) {
         string filepath = GetCacheFilePath(year, month);
         
-        // Serialize only the fields the UI actually needs
+        // Serialize only the fields the UI and notifications actually need
         Json::Value arr = Json::Array();
 
         for (uint i = 0; i < events.Length; i++) {
@@ -149,14 +149,9 @@ namespace Fetch {
             if (ev is null) continue;
 
             Json::Value item = Json::Object();
-            item["id"]          = ev.id;
-            item["title"]       = ev.title;
-            item["startMs"]     = ev.startMs;
-            item["durationSec"] = ev.durationSec;
-            item["description"] = ev.description;
-            item["url"]         = ev.url;
-            item["source"]      = ev.source;
-            item["game"]        = ev.game;
+            item["id"]      = ev.id;
+            item["title"]   = ev.title;
+            item["startMs"] = ev.startMs;
             
             arr.Add(item);
         }
@@ -449,7 +444,7 @@ namespace Fetch {
 
     string BuildApiUrl(int year, int month, int day) {
         string baseUrl = S_MoonApiUrl.Length == 0 ? FetchInternal::API_BASE_URL : S_MoonApiUrl.Split('?')[0];
-        int numPhases  = S_USNO_NumP <= 0 ? FetchInternal::DEFAULT_NUM_PHASES : S_USNO_NumP;
+        int numPhases  = S_USNO_NumP;
         
         string dateStr = tostring(year) + "-" + TimeUtils::Two(month) + "-" + TimeUtils::Two(day);
         
