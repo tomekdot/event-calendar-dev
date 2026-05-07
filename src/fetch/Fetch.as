@@ -444,7 +444,7 @@ namespace Fetch {
 
     string BuildApiUrl(int year, int month, int day) {
         string baseUrl = S_MoonApiUrl.Length == 0 ? FetchInternal::API_BASE_URL : S_MoonApiUrl.Split('?')[0];
-        int numPhases  = S_USNO_NumP;
+        int numPhases  = FetchInternal::DEFAULT_NUM_PHASES;
         
         string dateStr = tostring(year) + "-" + TimeUtils::Two(month) + "-" + TimeUtils::Two(day);
         

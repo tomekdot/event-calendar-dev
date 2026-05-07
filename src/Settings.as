@@ -22,6 +22,18 @@ bool S_EnableMoon = true;
 [Setting category="General" name="Show Calendar on Start" description="Show calendar on startup"]
 bool S_ShowCalendarOnStart = false;
 
+/*
+ * If true, the calendar opens as a modal popup and blocks the outside background.
+ */
+[Setting category="General" name="Block Outside Background for Calendar" description="Open the calendar as a modal popup"]
+bool S_BlockOutsideCalendarBg = false;
+
+/*
+ * If true, the About & Support window opens as a modal popup and blocks the outside background.
+ */
+[Setting category="General" name="Block Outside Background for About & Support" description="Open About & Support as a modal popup"]
+bool S_BlockOutsideAboutSupportBg = false;
+
 
 // --- Fetch Settings ---
 
@@ -38,12 +50,6 @@ string S_MoonApiUrl = "https://aa.usno.navy.mil/api/moon/phases/date";
  */
 [Setting category="Fetch" name="Auto Date" description="Start from today's date"]
 bool S_AutoDate = true;
-
-/*
- * Fixed number of moon phase events to request from the API in a single call.
- * Kept at 5 because that is enough for the plugin's current use.
- */
-const int S_USNO_NumP = 5;
 
 /*
  * The interval in seconds at which the plugin will automatically re-fetch data

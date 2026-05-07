@@ -240,22 +240,235 @@ void RenderCalendarFooter() {
     }
 }
 
+void RenderAboutSupportContent() {
+    auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+    auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
+    auto  winPad       = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
+    float btnH         = UI::GetTextLineHeight() + fp.y * 2.0f;
+    float footerHeight = btnH + spacing.y;
+
+    // --- WINDOW SIZE LOCK ---
+    float minWindowW = 500.0f;
+    float minWindowH = 380.0f;
+    vec2  ws         = UI::GetWindowSize();
+    if (ws.x < minWindowW || ws.y < minWindowH) {
+        UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
+    }
+
+    // --- HEADER ---
+    UI::Dummy(vec2(1, 4));
+    UI::PushFontSize(16.0);
+    UI::Text(Icons::CalendarO + " Event Calendar");
+    UI::PopFontSize();
+    UI::Separator();
+
+    // --- SCROLLABLE CONTENT ---
+    UI::BeginChild("AboutContent", vec2(0, -(footerHeight + 4.0f)), false);
+    
+    UI::Dummy(vec2(1, 6));
+    UI::PushFontSize(16.0);
+    UI::TextWrapped("Event Calendar displays moon phases and helps plan in-game events. It can optionally notify you about upcoming phases and supports Pursuit Channel schedule parsing");
+    UI::PopFontSize();
+
+    // --- SUPPORT SECTION ---
+    UI::Dummy(vec2(1, 6));
+
+    // Use a table with two columns: description and action button
+    if (UI::BeginTable("SupportLinks", 2)) {
+        UI::TableSetupColumn("Info", UI::TableColumnFlags::WidthStretch, 0.75f);
+        UI::TableSetupColumn("Action", UI::TableColumnFlags::WidthFixed, 120.0f);
+
+        // PayPal / Donate row
+        UI::TableNextRow();
+        UI::TableSetColumnIndex(0);
+        UI::BeginGroup();
+        UI::Text(Icons::Paypal + " Donate via PayPal");
+        UI::TextDisabled("Help development with a small donation. Every bit helps.");
+        UI::EndGroup();
+        UI::TableSetColumnIndex(1);
+        UI::PushStyleColor(UI::Col::Button, vec4(0.0, 0.439, 0.729, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.0, 0.357, 0.608, 1.0));
+        if (UI::Button("Open##Donate", vec2(-1, btnH))) {
+            if (S_SupportDonateUrl.Length > 0) OpenBrowserURL(S_SupportDonateUrl);
+            else UI::ShowNotification("Event Calendar", "No donation link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
+        }
+        if (UI::IsItemHovered()) {
+            string label = "Open donation link:";
+            string url = S_SupportDonateUrl.Length > 0 ? S_SupportDonateUrl : "(no link configured)";
+            float lw = UI::MeasureString(label).x;
+            float uw = UI::MeasureString(url).x;
+            float desired = lw + uw + 40.0f;
+            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            UI::SetNextWindowSize(w, 0, UI::Cond::Always);
+            UI::BeginTooltip();
+            UI::TextDisabled(label); UI::SameLine();
+            UI::TextWrapped(url);
+            UI::EndTooltip();
+        }
+        UI::PopStyleColor(2);
+        
+
+        // GitHub row
+        UI::TableNextRow();
+        UI::TableSetColumnIndex(0);
+        UI::BeginGroup();
+        UI::Text(Icons::Github + " Project on GitHub");
+        UI::TextDisabled("Browse source, report issues or contribute on GitHub.");
+        UI::EndGroup();
+        UI::TableSetColumnIndex(1);
+        UI::PushStyleColor(UI::Col::Button, vec4(0.2, 0.2, 0.2, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.3, 0.3, 0.3, 1.0));
+        if (UI::Button("Open##Github", vec2(-1, btnH))) {
+            if (S_SupportGithubUrl.Length > 0) OpenBrowserURL(S_SupportGithubUrl);
+            else UI::ShowNotification("Event Calendar", "No GitHub link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
+        }
+        if (UI::IsItemHovered()) {
+            string label = "Open GitHub repository:";
+            string url = S_SupportGithubUrl.Length > 0 ? S_SupportGithubUrl : "(no link configured)";
+            float lw = UI::MeasureString(label).x;
+            float uw = UI::MeasureString(url).x;
+            float desired = lw + uw + 40.0f;
+            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            UI::SetNextWindowSize(w, 0, UI::Cond::Always);
+            UI::BeginTooltip();
+            UI::TextDisabled(label); UI::SameLine();
+            UI::TextWrapped(url);
+            UI::EndTooltip();
+        }
+        UI::PopStyleColor(2);
+
+        // Discord row
+        UI::TableNextRow();
+        UI::TableSetColumnIndex(0);
+        UI::BeginGroup();
+        UI::Text(Icons::DiscordAlt + " Join Discord Community");
+        UI::TextDisabled("Chat with other users and get real-time help.");
+        UI::EndGroup();
+        UI::TableSetColumnIndex(1);
+        UI::PushStyleColor(UI::Col::Button, vec4(0.345, 0.396, 0.949, 1.0));
+        UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.267, 0.318, 0.871, 1.0));
+        if (UI::Button("Open##Discord", vec2(-1, btnH))) {
+            if (S_SupportDiscordUrl.Length > 0) OpenBrowserURL(S_SupportDiscordUrl);
+            else UI::ShowNotification("Event Calendar", "No Discord link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
+        }
+        if (UI::IsItemHovered()) {
+            string label = "Open Discord invite:";
+            string url = S_SupportDiscordUrl.Length > 0 ? S_SupportDiscordUrl : "(no link configured)";
+            float lw = UI::MeasureString(label).x;
+            float uw = UI::MeasureString(url).x;
+            float desired = lw + uw + 40.0f;
+            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            UI::SetNextWindowSize(w, 0, UI::Cond::Always);
+            UI::BeginTooltip();
+            UI::TextDisabled(label); UI::SameLine();
+            UI::TextWrapped(url);
+            UI::EndTooltip();
+        }
+        UI::PopStyleColor(2);
+
+        UI::EndTable();
+    }
+
+    UI::Dummy(vec2(1, 6));
+    UI::TextWrapped("If you'd like more ways to support or have suggestions for making this plugin better, open the GitHub repository or join the Discord community.");
+
+    UI::EndChild();
+
+    // --- FOOTER ---
+    UI::Separator();
+    string version    = "v1.1.0-dev";
+    float  versionW   = UI::MeasureString(version).x + 8.0f;
+
+    if (UI::BeginTable("AboutFooterTable", 2)) {
+        UI::TableSetupColumn("Left", UI::TableColumnFlags::WidthStretch, 0.75f);
+        UI::TableSetupColumn("Right", UI::TableColumnFlags::WidthFixed, versionW);
+        UI::TableNextRow();
+
+        UI::TableSetColumnIndex(0);
+        UI::TextDisabled(Icons::User + " Author: tomekdot  |  Team: vitalism-creative");
+
+        UI::TableSetColumnIndex(1);
+        float avail = UI::GetContentRegionAvail().x;
+        UI::SetCursorPosX(UI::GetCursorPos().x + Math::Max(0.0f, avail - versionW));
+        UI::TextDisabled(version);
+
+        UI::EndTable();
+    }
+}
+
 /*
  * Renders the main calendar window, which contains the header, grid, and event list.
  */
 void RenderCalendarWindow() {
+    const string calendarPopupId = "Moon Phase Calendar";
+
+    if (S_BlockOutsideCalendarBg) {
+        UI::SetNextWindowSize(580, 450, UI::Cond::FirstUseEver);
+        UI::OpenPopup(calendarPopupId);
+
+        if (UI::BeginPopupModal(calendarPopupId, g_UIState.ShowCalendarWindow, UI::WindowFlags::NoSavedSettings)) {
+            // Minimum window size lock for vertical stability.
+            // Horizontal shrinking is now handled by stretchable table columns.
+            auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+            auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
+            float footerHeight = UI::GetTextLineHeight() + fp.y * 2.0f + spacing.y;
+            float minWindowW   = 360.0f;
+            float minWindowH   = 420.0f;
+
+            vec2 ws = UI::GetWindowSize();
+            if (ws.x < minWindowW || ws.y < minWindowH) {
+                UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
+            }
+
+            RenderCalendarHeader();
+            UI::Separator();
+
+            if (g_IsLoading && g_Events.IsEmpty()) {
+                UI::Text("Loading events...");
+            } else {
+                RenderCalendarGrid();
+                UI::Separator();
+
+                UI::Text("Events for: " + g_UIState.CalYear + "-" + TimeUtils::Two(g_UIState.CalMonth) + "-" + TimeUtils::Two(g_UIState.SelectedDay));
+                UI::BeginChild("EventList", vec2(0, -footerHeight), true);
+
+                bool foundEvent = false;
+                string key = tostring(g_UIState.SelectedDay);
+                if (g_MonthEventCache.Exists(key)) {
+                    array<EventItem@>@ dayList = cast<array<EventItem@>@>(g_MonthEventCache[key]);
+                    if (dayList !is null) {
+                        Helpers::SortEventsByStart(dayList);
+                        for (uint i = 0; i < dayList.Length; i++) {
+                            auto@ e = dayList[i];
+                            if (e is null) continue;
+                            int Y, M, D, h, m, s;
+                            TimeUtils::UtcYMDHMSFromMs(e.startMs, Y, M, D, h, m, s);
+                            string tag = e.source.Length > 0 ? ("[" + e.source + "] ") : "";
+                            string dur = e.durationSec > 0 ? (" (" + tostring(e.durationSec/60) + "m)") : "";
+                            UI::Text(Icons::Circle + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
+                        }
+                        foundEvent = dayList.Length > 0;
+                    }
+                }
+                if (!foundEvent) UI::TextDisabled("No events for this day.");
+                UI::EndChild();
+
+                RenderCalendarFooter();
+            }
+            UI::EndPopup();
+        }
+        return;
+    }
+
     UI::SetNextWindowSize(580, 450, UI::Cond::FirstUseEver);
 
-    // The 'if (UI::Begin(...))' pattern ensures that code is only run when the window is visible.
     if (UI::Begin("Moon Phase Calendar", g_UIState.ShowCalendarWindow)) {
-        // Minimum window size lock for vertical stability.
-        // Horizontal shrinking is now handled by stretchable table columns.
-        auto fp = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
-        auto spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
+        auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
+        auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
         float footerHeight = UI::GetTextLineHeight() + fp.y * 2.0f + spacing.y;
-        float minWindowW = 360.0f; 
-        float minWindowH = 420.0f; 
-        
+        float minWindowW   = 360.0f;
+        float minWindowH   = 420.0f;
+
         vec2 ws = UI::GetWindowSize();
         if (ws.x < minWindowW || ws.y < minWindowH) {
             UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
@@ -264,17 +477,15 @@ void RenderCalendarWindow() {
         RenderCalendarHeader();
         UI::Separator();
 
-        // Errors are handled automatically in background - just show the data
-        if (g_IsLoading && g_Events.IsEmpty()) { 
+        if (g_IsLoading && g_Events.IsEmpty()) {
             UI::Text("Loading events...");
         } else {
             RenderCalendarGrid();
             UI::Separator();
-            
-            // Render list but leave space for footer
+
             UI::Text("Events for: " + g_UIState.CalYear + "-" + TimeUtils::Two(g_UIState.CalMonth) + "-" + TimeUtils::Two(g_UIState.SelectedDay));
             UI::BeginChild("EventList", vec2(0, -footerHeight), true);
-            
+
             bool foundEvent = false;
             string key = tostring(g_UIState.SelectedDay);
             if (g_MonthEventCache.Exists(key)) {
@@ -295,7 +506,7 @@ void RenderCalendarWindow() {
             }
             if (!foundEvent) UI::TextDisabled("No events for this day.");
             UI::EndChild();
-            
+
             RenderCalendarFooter();
         }
     }
@@ -306,165 +517,22 @@ void RenderCalendarWindow() {
  * Renders the support window, which contains project information and donation/social links.
  */
 void RenderAboutSupportWindow() {
+    const string aboutPopupId = Icons::InfoCircle + " About & Support";
+
+    if (S_BlockOutsideAboutSupportBg) {
+        UI::SetNextWindowSize(500, 380, UI::Cond::FirstUseEver);
+        UI::OpenPopup(aboutPopupId);
+
+        if (UI::BeginPopupModal(aboutPopupId, S_ShowAboutSupport, UI::WindowFlags::NoSavedSettings)) {
+            RenderAboutSupportContent();
+            UI::EndPopup();
+        }
+        return;
+    }
+
     UI::SetNextWindowSize(500, 380, UI::Cond::FirstUseEver);
     if (UI::Begin(Icons::InfoCircle + " About & Support", S_ShowAboutSupport)) {
-        auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
-        auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
-        auto  winPad       = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
-        float btnH         = UI::GetTextLineHeight() + fp.y * 2.0f;
-        float footerHeight = btnH + spacing.y;
-
-        // --- WINDOW SIZE LOCK ---
-        float minWindowW = 500.0f;
-        float minWindowH = 380.0f;
-        vec2  ws         = UI::GetWindowSize();
-        if (ws.x < minWindowW || ws.y < minWindowH) {
-            UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
-        }
-
-        // --- HEADER ---
-        UI::Dummy(vec2(1, 4));
-        UI::PushFontSize(16.0);
-        UI::Text(Icons::CalendarO + " Event Calendar");
-        UI::PopFontSize();
-        UI::Separator();
-
-        // --- SCROLLABLE CONTENT ---
-        UI::BeginChild("AboutContent", vec2(0, -(footerHeight + 4.0f)), false);
-        
-        UI::Dummy(vec2(1, 6));
-        UI::PushFontSize(16.0);
-        UI::TextWrapped("Event Calendar displays moon phases and helps plan in-game events. It can optionally notify you about upcoming phases and supports Pursuit Channel schedule parsing");
-        UI::PopFontSize();
-
-        // --- SUPPORT SECTION ---
-        UI::Dummy(vec2(1, 6));
-
-        // Use a table with two columns: description and action button
-        if (UI::BeginTable("SupportLinks", 2)) {
-            UI::TableSetupColumn("Info", UI::TableColumnFlags::WidthStretch, 0.75f);
-            UI::TableSetupColumn("Action", UI::TableColumnFlags::WidthFixed, 120.0f);
-
-            // PayPal / Donate row
-            UI::TableNextRow();
-            UI::TableSetColumnIndex(0);
-            UI::BeginGroup();
-            UI::Text(Icons::Paypal + " Donate via PayPal");
-            UI::TextDisabled("Help development with a small donation. Every bit helps.");
-            UI::EndGroup();
-            UI::TableSetColumnIndex(1);
-            UI::PushStyleColor(UI::Col::Button, vec4(0.0, 0.439, 0.729, 1.0));
-            UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.0, 0.357, 0.608, 1.0));
-            if (UI::Button("Open##Donate", vec2(-1, btnH))) {
-                if (S_SupportDonateUrl.Length > 0) OpenBrowserURL(S_SupportDonateUrl);
-                else UI::ShowNotification("Event Calendar", "No donation link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
-            }
-            // Hover preview tooltip for Donate link (wider, horizontal)
-            if (UI::IsItemHovered()) {
-                string label = "Open donation link:";
-                string url = S_SupportDonateUrl.Length > 0 ? S_SupportDonateUrl : "(no link configured)";
-                float lw = UI::MeasureString(label).x;
-                float uw = UI::MeasureString(url).x;
-                float desired = lw + uw + 40.0f;
-                int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
-                UI::SetNextWindowSize(w, 0, UI::Cond::Always);
-                UI::BeginTooltip();
-                UI::TextDisabled(label); UI::SameLine();
-                UI::TextWrapped(url);
-                UI::EndTooltip();
-            }
-            UI::PopStyleColor(2);
-
-            // GitHub row
-            UI::TableNextRow();
-            UI::TableSetColumnIndex(0);
-            UI::BeginGroup();
-            UI::Text(Icons::Github + " Project on GitHub");
-            UI::TextDisabled("Browse source, report issues or contribute on GitHub.");
-            UI::EndGroup();
-            UI::TableSetColumnIndex(1);
-            UI::PushStyleColor(UI::Col::Button, vec4(0.2, 0.2, 0.2, 1.0));
-            UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.3, 0.3, 0.3, 1.0));
-            if (UI::Button("Open##Github", vec2(-1, btnH))) {
-                if (S_SupportGithubUrl.Length > 0) OpenBrowserURL(S_SupportGithubUrl);
-                else UI::ShowNotification("Event Calendar", "No GitHub link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
-            }
-            // Hover preview tooltip for GitHub link (wider, horizontal)
-            if (UI::IsItemHovered()) {
-                string label = "Open GitHub repository:";
-                string url = S_SupportGithubUrl.Length > 0 ? S_SupportGithubUrl : "(no link configured)";
-                float lw = UI::MeasureString(label).x;
-                float uw = UI::MeasureString(url).x;
-                float desired = lw + uw + 40.0f;
-                int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
-                UI::SetNextWindowSize(w, 0, UI::Cond::Always);
-                UI::BeginTooltip();
-                UI::TextDisabled(label); UI::SameLine();
-                UI::TextWrapped(url);
-                UI::EndTooltip();
-            }
-            UI::PopStyleColor(2);
-
-            // Discord row
-            UI::TableNextRow();
-            UI::TableSetColumnIndex(0);
-            UI::BeginGroup();
-            UI::Text(Icons::DiscordAlt + " Join Discord Community");
-            UI::TextDisabled("Chat with other users and get real-time help.");
-            UI::EndGroup();
-            UI::TableSetColumnIndex(1);
-            UI::PushStyleColor(UI::Col::Button, vec4(0.345, 0.396, 0.949, 1.0));
-            UI::PushStyleColor(UI::Col::ButtonHovered, vec4(0.267, 0.318, 0.871, 1.0));
-            if (UI::Button("Open##Discord", vec2(-1, btnH))) {
-                if (S_SupportDiscordUrl.Length > 0) OpenBrowserURL(S_SupportDiscordUrl);
-                else UI::ShowNotification("Event Calendar", "No Discord link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
-            }
-            // Hover preview tooltip for Discord link (wider, horizontal)
-            if (UI::IsItemHovered()) {
-                string label = "Open Discord invite:";
-                string url = S_SupportDiscordUrl.Length > 0 ? S_SupportDiscordUrl : "(no link configured)";
-                float lw = UI::MeasureString(label).x;
-                float uw = UI::MeasureString(url).x;
-                float desired = lw + uw + 40.0f;
-                int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
-                UI::SetNextWindowSize(w, 0, UI::Cond::Always);
-                UI::BeginTooltip();
-                UI::TextDisabled(label); UI::SameLine();
-                UI::TextWrapped(url);
-                UI::EndTooltip();
-            }
-            UI::PopStyleColor(2);
-
-            UI::EndTable();
-        }
-
-        UI::Dummy(vec2(1, 6));
-        UI::TextWrapped("If you'd like more ways to support or have suggestions for making this plugin better, open the GitHub repository or join the Discord community.");
-
-        UI::EndChild();
-
-        // --- FOOTER ---
-        UI::Separator();
-        // Render author/team on the left and version on the right in one line
-        string version    = "v1.1.0-dev";
-        float  versionW   = UI::MeasureString(version).x + 8.0f; // add small padding
-
-        if (UI::BeginTable("AboutFooterTable", 2)) {
-            UI::TableSetupColumn("Left", UI::TableColumnFlags::WidthStretch, 0.75f);
-            UI::TableSetupColumn("Right", UI::TableColumnFlags::WidthFixed, versionW);
-            UI::TableNextRow();
-
-            UI::TableSetColumnIndex(0);
-            UI::TextDisabled(Icons::User + " Author: tomekdot  |  Team: vitalism-creative");
-
-            UI::TableSetColumnIndex(1);
-            // Ensure right column shows the version aligned to the right edge
-            float avail = UI::GetContentRegionAvail().x;
-            UI::SetCursorPosX(UI::GetCursorPos().x + Math::Max(0.0f, avail - versionW));
-            UI::TextDisabled(version);
-
-            UI::EndTable();
-        }
+        RenderAboutSupportContent();
     }
     UI::End();
 }
