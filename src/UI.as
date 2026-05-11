@@ -220,7 +220,7 @@ void RenderEventList() {
                     TimeUtils::UtcYMDHMSFromMs(e.startMs, Y, M, D, h, m, s);
                     string tag = e.source.Length > 0 ? ("[" + e.source + "] ") : "";
                     string dur = e.durationSec > 0 ? (" (" + tostring(e.durationSec/60) + "m)") : "";
-                    UI::Text(Icons::Circle + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
+                    UI::Text(Moon::PhaseEmojiForTitleLower(e.title) + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
                 }
                 foundEvent = dayList.Length > 0;
             }
@@ -457,7 +457,7 @@ void RenderCalendarWindow() {
                             TimeUtils::UtcYMDHMSFromMs(e.startMs, Y, M, D, h, m, s);
                             string tag = e.source.Length > 0 ? ("[" + e.source + "] ") : "";
                             string dur = e.durationSec > 0 ? (" (" + tostring(e.durationSec/60) + "m)") : "";
-                            UI::Text(Icons::Circle + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
+                            UI::Text(Moon::PhaseEmojiForTitleLower(e.title) + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
                         }
                         foundEvent = dayList.Length > 0;
                     }
@@ -511,7 +511,7 @@ void RenderCalendarWindow() {
                         TimeUtils::UtcYMDHMSFromMs(e.startMs, Y, M, D, h, m, s);
                         string tag = e.source.Length > 0 ? ("[" + e.source + "] ") : "";
                         string dur = e.durationSec > 0 ? (" (" + tostring(e.durationSec/60) + "m)") : "";
-                        UI::Text(Icons::Circle + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
+                        UI::Text(Moon::PhaseEmojiForTitleLower(e.title) + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
                     }
                     foundEvent = dayList.Length > 0;
                 }

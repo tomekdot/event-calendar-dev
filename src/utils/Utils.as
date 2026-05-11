@@ -73,6 +73,21 @@ namespace Moon {
             default: return vec4(0.3, 0.3, 0.3, 1.0);               // Darkest Grey (Intermediate)
         }
     }
+
+    /*
+     * Returns a moon emoji for a given event title, suitable for event rows.
+     * @param t The phase title string.
+     * @return A phase emoji, or a neutral moon for unrecognized phases.
+     */
+    string PhaseEmojiForTitleLower(const string &in t) {
+        switch (GetPhaseKind(t)) {
+            case PhaseKind::PK_NM:  return Icons::MoonO; 
+            case PhaseKind::PK_FQ:  return Icons::MoonO; 
+            case PhaseKind::PK_FM:  return Icons::MoonO; 
+            case PhaseKind::PK_LQ:  return Icons::MoonO; 
+            default:                return Icons::MoonO; 
+        }
+    }
 }
 
 /*
