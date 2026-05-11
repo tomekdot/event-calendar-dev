@@ -11,6 +11,18 @@ void RenderMenu() {
 }
 
 /*
+ * Renders the plugin's entry in Openplanet's main menu bar.
+ */
+void RenderMenuMain() {
+    if (!S_ShowCalendarInMainMenu) return;
+
+    if (UI::MenuItem(Icons::CalendarO + " " + "Event Calendar", "", g_UIState.ShowCalendarWindow)) {
+        g_UIState.ShowCalendarWindow = !g_UIState.ShowCalendarWindow;
+        S_ShowCalendarOnStart = g_UIState.ShowCalendarWindow;
+    }
+}
+
+/*
  * Main rendering router, called every frame to draw the plugin's UI.
  * It decides which windows to render based on the current UI state.
  */

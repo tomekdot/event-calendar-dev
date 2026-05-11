@@ -285,11 +285,6 @@ namespace Fetch {
                 if (item.HasKey("id"))          ev.id          = string(item["id"]);
                 if (item.HasKey("title"))       ev.title       = string(item["title"]);
                 if (item.HasKey("durationSec")) ev.durationSec = int(item["durationSec"]);
-                if (item.HasKey("description")) ev.description = string(item["description"]);
-                if (item.HasKey("url"))         ev.url         = string(item["url"]);
-                if (item.HasKey("source"))      ev.source      = string(item["source"]);
-                if (item.HasKey("game"))        ev.game        = string(item["game"]);
-                
                 if (item.HasKey("startMs")) {
                     auto@ val = item["startMs"];
                     if (val.GetType() == Json::Type::String) {

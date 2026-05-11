@@ -23,6 +23,12 @@ bool S_EnableMoon = true;
 bool S_ShowCalendarOnStart = false;
 
 /*
+ * If true, the calendar also appears in Openplanet's main menu bar.
+ */
+[Setting category="General" name="Show Calendar in Main Menu" description="Show calendar in Openplanet's main menu bar"]
+bool S_ShowCalendarInMainMenu = true;
+
+/*
  * If true, the calendar opens as a modal popup and blocks the outside background.
  */
 [Setting category="General" name="Block Outside Background for Calendar" description="Open the calendar as a modal popup"]
