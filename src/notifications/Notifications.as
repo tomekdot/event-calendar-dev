@@ -40,7 +40,7 @@ namespace Notifications {
         // Show the actual notification on the UI.
         if (S_EnableNotifications) {
             UI::ShowNotification(
-                "[MOON] " + e.title, 
+                Icons::MoonO + " " + e.title, 
                 status + "\n" + eventTimeUtc, 
                 Moon::PhaseColorForTitleLower(e.title), 
                 S_NotificationDurationSec * 1000
