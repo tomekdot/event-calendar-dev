@@ -19,7 +19,7 @@ bool S_EnableMoon = true;
  * If true, the main calendar window will be visible immediately upon plugin startup.
  * If false, the user must open it manually from the menu.
  */
-[Setting category="General" name="Show Calendar on Start" description="Show calendar on startup"]
+[Setting category="General" name="Show Calendar on Start" description="Show calendar window on startup"]
 bool S_ShowCalendarOnStart = false;
 
 /*

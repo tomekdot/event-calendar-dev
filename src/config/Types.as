@@ -68,12 +68,12 @@ class UIState {
     // The day of the month currently selected by the user in the calendar grid.
     int    SelectedDay         = 0;
 
-    // A flag to control the visibility of the main calendar window. 
+    // A flag to control the visibility of the main calendar window.
     bool   ShowCalendarWindow  = true;
 
-    // A flag to control the visibility of the overlay calendar window. 
+    // A flag to control the visibility of the overlay calendar window.
     bool   ShowOverlayCalendar = false;
 
-    // Timestamp (ms) of the last time the user changed the calendar date. 
+    // Timestamp (ms) of the last time the user changed the calendar date.
     uint64 LastDateChangeMs    = 0;
 }
