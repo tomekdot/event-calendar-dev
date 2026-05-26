@@ -1,36 +1,53 @@
 name: CI
+
 permissions:
-    contents: read
+  contents: read
 
 on:
-    push:
-        branches: [ main, master ]
-    pull_request:
-        branches: [ main, master ]
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
 jobs:
-    build:
-        name: Build & Verify (.op)
-        runs-on: windows-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+  build:
+    name: Build & Verify (.op)
+    runs-on: windows-latest
 
-            - name: Build plugin (.op)
-              shell: pwsh
-              run: |
-                $ErrorActionPreference = 'Stop'
-                Write-Host "Running tools/build-op.ps1 (includes tests)"
-                .\tools\build-op.ps1 -IncludeTests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Verify artifact
-              shell: pwsh
-              run: |
-                Write-Host "Running tools/verify-release.ps1"
-                .\tools\verify-release.ps1
+      - name: Configure Git
+        shell: pwsh
+        run: |
+          git config --global gc.auto 0
+          git config --global core.compression 0
 
-            - name: Upload .op artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: event-calendar-op
-                path: dist/*.op
+      - name: Git diagnostics
+        shell: pwsh
+        run: |
+          git --version
+          git remote -v
+          git status
+
+      - name: Build plugin (.op)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "Running tools/build-op.ps1 (includes tests)"
+          .\tools\build-op.ps1 -IncludeTests
+
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          Write-Host "Running tools/verify-release.ps1"
+          .\tools\verify-release.ps1
+
+      - name: Upload .op artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-calendar-op
+          path: dist/*.op
