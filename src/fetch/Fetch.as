@@ -120,7 +120,7 @@ namespace Fetch {
             }
         }
 
-        if (dir.Length == 0 || !IO::FolderExists(dir)) {
+        if (dir.Length > 0 && !IO::FolderExists(dir)) {
             try { IO::CreateFolder(dir, true); } catch {}
         }
 
@@ -131,7 +131,9 @@ namespace Fetch {
      * Generates a unique filename for a specific month's cache file.
      */
     string GetCacheFilePath(int year, int month) {
-        return GetCacheDir() + "/moon_" + tostring(year) + "_" + tostring(month) + ".json";
+        string cacheDir = GetCacheDir();
+        if (cacheDir.Length == 0) return "";
+        return cacheDir + "/moon_" + tostring(year) + "_" + tostring(month) + ".json";
     }
 
     /*
