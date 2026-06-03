@@ -78,4 +78,4 @@ Lightweight plugin that shows upcoming moon phases and can optionally notify the
 
 ## 📸 Screenshot
 
-![Moon Phase Calendar screenshot](assets/screenshots/screenshot-v1.1.0.png)
+![Moon Phase Calendar screenshot](assets/screenshots/screenshot-v1.1.0.webp)
