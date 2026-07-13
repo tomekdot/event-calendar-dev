@@ -75,12 +75,12 @@ bool S_LockWindowToSettings = true;
 
 // Turns the chosen preset into the actual scale number used for window and text size.
 float UiScaleValue(EUiScale s) {
-    if      (s == EUiScale::VerySmall) return 0.55f;
-    else if (s == EUiScale::Small)        return 0.70f;
-    else if (s == EUiScale::Medium)       return 0.80f;
+    if      (s == EUiScale::VerySmall)  return 0.55f;
+    else if (s == EUiScale::Small)      return 0.70f;
+    else if (s == EUiScale::Medium)     return 0.80f;
     else if (s == EUiScale::Large)      return 0.90f;
-    else if (s == EUiScale::ExtraLarge)      return 1.00f;
-    else if (s == EUiScale::Huge)          return 1.20f;
+    else if (s == EUiScale::ExtraLarge) return 1.00f;
+    else if (s == EUiScale::Huge)       return 1.20f;
     return 1.0f;
 }
 

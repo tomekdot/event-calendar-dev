@@ -158,11 +158,10 @@ void RenderCalendarGrid() {
                 continue;
             }
 
-            string dayKey = tostring(dayCounter);
-            bool hasEvent = g_MonthEventCache.Exists(dayKey);
-            bool isSelected = (dayCounter == g_UIState.SelectedDay);
-            
-            bool colorWasPushed = false;
+            string dayKey         = tostring(dayCounter);
+            bool   hasEvent       = g_MonthEventCache.Exists(dayKey);
+            bool   isSelected     = (dayCounter == g_UIState.SelectedDay);
+            bool   colorWasPushed = false;
             if (isSelected) {
                 // Highlight the selected day
                 UI::PushStyleColor(UI::Col::Button, vec4(0.26, 0.59, 0.98, 1.0));
@@ -253,7 +252,7 @@ void RenderCalendarFooter() {
 }
 
 void RenderAboutSupportContent() {
-    float fontScale = 1.0f;   // About text stays a constant size, independent of UI Size
+    float fontScale    = 1.0f;   // About text stays a constant size, independent of UI Size
     auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
     auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
     auto  winPad       = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
@@ -298,12 +297,12 @@ void RenderAboutSupportContent() {
             else UI::ShowNotification("Event Calendar", "No donation link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
         }
         if (UI::IsItemHovered()) {
-            string label = "Open donation link:";
-            string url = S_SupportDonateUrl.Length > 0 ? S_SupportDonateUrl : "(no link configured)";
-            float lw = UI::MeasureString(label).x;
-            float uw = UI::MeasureString(url).x;
-            float desired = lw + uw + 40.0f;
-            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            string label   = "Open donation link:";
+            string url     = S_SupportDonateUrl.Length > 0 ? S_SupportDonateUrl : "(no link configured)";
+            float  lw      = UI::MeasureString(label).x;
+            float  uw      = UI::MeasureString(url).x;
+            float  desired = lw + uw + 40.0f;
+            int    w       = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
             UI::SetNextWindowSize(w, 0, UI::Cond::Always);
             UI::BeginTooltip();
             UI::TextDisabled(label); UI::SameLine();
@@ -328,12 +327,12 @@ void RenderAboutSupportContent() {
             else UI::ShowNotification("Event Calendar", "No GitHub link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
         }
         if (UI::IsItemHovered()) {
-            string label = "Open GitHub repository:";
-            string url = S_SupportGithubUrl.Length > 0 ? S_SupportGithubUrl : "(no link configured)";
-            float lw = UI::MeasureString(label).x;
-            float uw = UI::MeasureString(url).x;
-            float desired = lw + uw + 40.0f;
-            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            string label   = "Open GitHub repository:";
+            string url     = S_SupportGithubUrl.Length > 0 ? S_SupportGithubUrl : "(no link configured)";
+            float  lw      = UI::MeasureString(label).x;
+            float  uw      = UI::MeasureString(url).x;
+            float  desired = lw + uw + 40.0f;
+            int    w       = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
             UI::SetNextWindowSize(w, 0, UI::Cond::Always);
             UI::BeginTooltip();
             UI::TextDisabled(label); UI::SameLine();
@@ -357,12 +356,12 @@ void RenderAboutSupportContent() {
             else UI::ShowNotification("Event Calendar", "No Discord link available!", vec4(0.8, 0.4, 0.4, 1.0), 3000);
         }
         if (UI::IsItemHovered()) {
-            string label = "Open Discord invite:";
-            string url = S_SupportDiscordUrl.Length > 0 ? S_SupportDiscordUrl : "(no link configured)";
-            float lw = UI::MeasureString(label).x;
-            float uw = UI::MeasureString(url).x;
-            float desired = lw + uw + 40.0f;
-            int w = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
+            string label   = "Open Discord invite:";
+            string url     = S_SupportDiscordUrl.Length > 0 ? S_SupportDiscordUrl : "(no link configured)";
+            float  lw      = UI::MeasureString(label).x;
+            float  uw      = UI::MeasureString(url).x;
+            float  desired = lw + uw + 40.0f;
+            int    w       = int(Math::Max(200.0f, Math::Min(desired, 800.0f)));
             UI::SetNextWindowSize(w, 0, UI::Cond::Always);
             UI::BeginTooltip();
             UI::TextDisabled(label); UI::SameLine();
