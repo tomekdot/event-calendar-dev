@@ -6,6 +6,104 @@
 [Setting category="About" name="About & Support" description="Show combined About and Support window"]
 bool S_ShowAboutSupport = false;
 
+// --- UI Scale ---
+
+/*
+ * How big the calendar and About windows appear on screen.
+ * Pick the option that matches your screen — smaller choices are for
+ * old 4:3 monitors and low resolutions where the default window is too big.
+ */
+enum EUiScale {
+    VerySmall   = 0,   // old 4:3 low-res monitors (~800x600)   -> 0.55
+    Small       = 1,   // 4:3 monitors (~1024x768)              -> 0.70
+    Medium      = 2,   // 16:9 smaller screens (~1280x720)      -> 0.80
+    Large       = 3,   // Full HD (1920x1080)                   -> 0.90
+    ExtraLarge  = 4,   // Quad HD (2560x1440, default)          -> 1.00
+    Huge        = 5,   // 4K (3840x2160)                        -> 1.20
+    Custom      = 6    // your own width / height (see below)   -> see below
+}
+
+/*
+ * UI size preset.
+ * Choose the one that fits your screen — lower = smaller windows (good for
+ * 4:3 or low-resolution displays), higher = bigger windows (good for 4K).
+ * Pick "Custom" to set an exact width and height yourself.
+ */
+[Setting category="UI" name="UI Size" description="How big the plugin windows should be. Pick the option that matches your screen, or choose Custom for your own size."]
+EUiScale S_UIScale = EUiScale::ExtraLarge;
+
+// --- Custom size (only used when "Custom" is selected above) ---
+
+/*
+ * Exact window width in pixels. Only used when "UI Size" is set to "Custom".
+ * You can still drag-resize the window freely afterwards.
+ */
+[Setting category="UI" name="Custom Width" description="Window width in pixels. Used only when UI Size = Custom. Type a value." if="S_UIScale Custom"]
+int S_CustomWidth = 580;
+
+/*
+ * Exact window height in pixels. Only used when "UI Size" is set to "Custom".
+ * You can still drag-resize the window freely afterwards.
+ */
+[Setting category="UI" name="Custom Height" description="Window height in pixels. Used only when UI Size = Custom. Type a value." if="S_UIScale Custom"]
+int S_CustomHeight = 450;
+
+// --- Window position (where the calendar window appears on screen) ---
+
+/*
+ * Horizontal position of the calendar window, in pixels from the left screen edge.
+ * Changing this in the settings moves the window; the new position is applied immediately.
+ */
+[Setting category="UI" name="Position X" description="Horizontal position from the left screen edge (pixels)." if="S_UIScale Custom"]
+int S_PosX = 100;
+
+/*
+ * Vertical position of the calendar window, in pixels from the top screen edge.
+ * Changing this in the settings moves the window; the new position is applied immediately.
+ */
+[Setting category="UI" name="Position Y" description="Vertical position from the top screen edge (pixels)." if="S_UIScale Custom"]
+int S_PosY = 100;
+
+/*
+ * When ON, the calendar window is locked to the Custom Width/Height and Position X/Y
+ * from the settings (re-applies live as you change them). When OFF, those settings only
+ * decide the size/position at first open, and you can freely drag / resize the window
+ * afterwards — like the preset sizes. Only used when UI Size = Custom.
+ */
+[Setting category="UI" name="Lock Window To Settings" description="ON = window stays locked to the Custom size & position. OFF = you can drag and resize it freely after it opens." if="S_UIScale Custom"]
+bool S_LockWindowToSettings = true;
+
+// Turns the chosen preset into the actual scale number used for window and text size.
+float UiScaleValue(EUiScale s) {
+    if      (s == EUiScale::VerySmall) return 0.55f;
+    else if (s == EUiScale::Small)        return 0.70f;
+    else if (s == EUiScale::Medium)       return 0.80f;
+    else if (s == EUiScale::Large)      return 0.90f;
+    else if (s == EUiScale::ExtraLarge)      return 1.00f;
+    else if (s == EUiScale::Huge)          return 1.20f;
+    return 1.0f;
+}
+
+// Works out the window size and font scale for a given base size.
+// When "Custom" is picked (and allowed for this window), the exact S_CustomWidth /
+// S_CustomHeight are used and the font stays at its normal size so text stays readable.
+// `applyAlways` is set true for Custom so the window resizes live as you change
+// the Custom Width / Height in settings (otherwise FirstUseEver would ignore changes).
+// `customAllowed` lets callers opt out — e.g. the About window ignores Custom and just
+// uses its normal base size / font scale, since Custom size only makes sense for the calendar.
+void ComputeWindowSize(float baseW, float baseH, vec2 &out winSize, float &out fontScale, bool &out applyAlways, bool customAllowed = true) {
+    if (customAllowed && S_UIScale == EUiScale::Custom) {
+        winSize     = vec2(float(S_CustomWidth), float(S_CustomHeight));
+        fontScale   = 1.0f;
+        applyAlways = true;
+    } else {
+        float s     = UiScaleValue(S_UIScale);
+        winSize     = vec2(baseW * s, baseH * s);
+        fontScale   = s;
+        applyAlways = false;
+    }
+}
+
 // --- General Settings ---
 
 /*

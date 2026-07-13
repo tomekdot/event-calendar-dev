@@ -3,3 +3,11 @@
 
 # Build artifacts
 .stage/
+
+# Hermes temp files
+.hermes-tmp*
+
+# Large / unrelated screenshots and downloads dropped into assets
+assets/screenshots/*.msixbundle
+assets/screenshots/*.pdf
+assets/screenshots/*.winmd

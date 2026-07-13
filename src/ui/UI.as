@@ -253,23 +253,16 @@ void RenderCalendarFooter() {
 }
 
 void RenderAboutSupportContent() {
+    float fontScale = 1.0f;   // About text stays a constant size, independent of UI Size
     auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
     auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
     auto  winPad       = UI::GetStyleVarVec2(UI::StyleVar::WindowPadding);
     float btnH         = UI::GetTextLineHeight() + fp.y * 2.0f;
     float footerHeight = btnH + spacing.y;
 
-    // --- WINDOW SIZE LOCK ---
-    float minWindowW = 500.0f;
-    float minWindowH = 380.0f;
-    vec2  ws         = UI::GetWindowSize();
-    if (ws.x < minWindowW || ws.y < minWindowH) {
-        UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
-    }
-
     // --- HEADER ---
     UI::Dummy(vec2(1, 4));
-    UI::PushFontSize(16.0);
+    UI::PushFontSize(16.0f * fontScale);
     UI::Text(Icons::CalendarO + " Event Calendar");
     UI::PopFontSize();
     UI::Separator();
@@ -278,7 +271,7 @@ void RenderAboutSupportContent() {
     UI::BeginChild("AboutContent", vec2(0, -(footerHeight + 4.0f)), false);
     
     UI::Dummy(vec2(1, 6));
-    UI::PushFontSize(16.0);
+    UI::PushFontSize(16.0f * fontScale);
     UI::TextWrapped("Event Calendar displays moon phases and helps plan in-game events. It can optionally notify you about upcoming phases and supports Pursuit Channel schedule parsing");
     UI::PopFontSize();
 
@@ -415,22 +408,17 @@ void RenderCalendarWindow() {
     const string calendarPopupId = "Moon Phase Calendar";
 
     if (S_BlockOutsideCalendarBg) {
-        UI::SetNextWindowSize(580, 450, UI::Cond::FirstUseEver);
+        vec2 winSize; float fontScale; bool applyAlways;
+        ComputeWindowSize(580, 450, winSize, fontScale, applyAlways);
+        bool lockCustom = (S_UIScale == EUiScale::Custom) && S_LockWindowToSettings;
+        UI::SetNextWindowSize(int(winSize.x), int(winSize.y), lockCustom ? UI::Cond::Always : UI::Cond::FirstUseEver);
         UI::OpenPopup(calendarPopupId);
 
         if (UI::BeginPopupModal(calendarPopupId, g_UIState.ShowCalendarWindow, UI::WindowFlags::NoSavedSettings)) {
-            // Minimum window size lock for vertical stability.
-            // Horizontal shrinking is now handled by stretchable table columns.
+            UI::PushFontSize(16.0f * fontScale);
             auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
             auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
             float footerHeight = UI::GetTextLineHeight() + fp.y * 2.0f + spacing.y;
-            float minWindowW   = 360.0f;
-            float minWindowH   = 420.0f;
-
-            vec2 ws = UI::GetWindowSize();
-            if (ws.x < minWindowW || ws.y < minWindowH) {
-                UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
-            }
 
             RenderCalendarHeader();
             UI::Separator();
@@ -467,24 +455,27 @@ void RenderCalendarWindow() {
 
                 RenderCalendarFooter();
             }
+            UI::PopFontSize();
             UI::EndPopup();
         }
         return;
     }
 
-    UI::SetNextWindowSize(580, 450, UI::Cond::FirstUseEver);
+    vec2 winSize; float fontScale; bool applyAlways;
+    ComputeWindowSize(580, 450, winSize, fontScale, applyAlways);
+    bool lockCustom = (S_UIScale == EUiScale::Custom) && S_LockWindowToSettings;
+    if (lockCustom) {
+        UI::SetNextWindowPos(int(S_PosX), int(S_PosY), UI::Cond::Always);
+    }
+    // Lock ON -> size follows settings live. Lock OFF (or non-Custom) -> size set once,
+    // so the window can be dragged / resized freely afterwards.
+    UI::SetNextWindowSize(int(winSize.x), int(winSize.y), lockCustom ? UI::Cond::Always : UI::Cond::FirstUseEver);
 
     if (UI::Begin("Moon Phase Calendar", g_UIState.ShowCalendarWindow)) {
+        UI::PushFontSize(16.0f * fontScale);
         auto  fp           = UI::GetStyleVarVec2(UI::StyleVar::FramePadding);
         auto  spacing      = UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing);
         float footerHeight = UI::GetTextLineHeight() + fp.y * 2.0f + spacing.y;
-        float minWindowW   = 360.0f;
-        float minWindowH   = 420.0f;
-
-        vec2 ws = UI::GetWindowSize();
-        if (ws.x < minWindowW || ws.y < minWindowH) {
-            UI::SetWindowSize(vec2(Math::Max(ws.x, minWindowW), Math::Max(ws.y, minWindowH)));
-        }
 
         RenderCalendarHeader();
         UI::Separator();
@@ -522,6 +513,7 @@ void RenderCalendarWindow() {
             RenderCalendarFooter();
         }
     }
+    UI::PopFontSize();
     UI::End();
 }
 
@@ -529,6 +521,7 @@ void RenderCalendarWindow() {
  * Renders the support window, which contains project information and donation/social links.
  */
 void RenderAboutSupportWindow() {
+    // About window is a fixed size, independent of the UI Size setting.
     const string aboutPopupId = Icons::InfoCircle + " About & Support";
 
     if (S_BlockOutsideAboutSupportBg) {
