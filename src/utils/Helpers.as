@@ -185,7 +185,7 @@ namespace Helpers {
             while (j >= 0) {
                 EventItem@ prev   = arr[uint(j)];
                 int64      prevMs = prev is null ? 0 : prev.startMs;
-                int64      keyMs  = key is null ? 0 : key.startMs;
+                int64      keyMs  = key  is null ? 0 : key.startMs;
                 if (prevMs <= keyMs) break;
                 @arr[uint(j + 1)] = prev;
                 j--;

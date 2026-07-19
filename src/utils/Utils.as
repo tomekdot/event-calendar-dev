@@ -65,12 +65,19 @@ namespace Moon {
      * @return A color vector (RGBA).
      */
     vec4 PhaseColorForTitleLower(const string &in t) {
-        switch (GetPhaseKind(t)) { 
-            case PhaseKind::PK_NM: return vec4(0.5, 0.5, 0.5, 1.0); // Grey
-            case PhaseKind::PK_FQ: return vec4(0.6, 0.6, 0.6, 1.0); // Light Grey
-            case PhaseKind::PK_FM: return vec4(0.7, 0.7, 0.7, 1.0); // Lighter Grey
-            case PhaseKind::PK_LQ: return vec4(0.4, 0.4, 0.4, 1.0); // Dark Grey
-            default: return vec4(0.3, 0.3, 0.3, 1.0);               // Darkest Grey (Intermediate)
+        // Brightness follows the real illuminated fraction of the Moon's disc,
+        // but kept in a mid range so the button text stays readable on every phase
+        // (a near-white background would hide the light text).
+        //   Full Moon      = brightest
+        //   First/Last Qtr = mid
+        //   Intermediate   = darker
+        //   New Moon       = darkest
+        switch (GetPhaseKind(t)) {
+            case PhaseKind::PK_FM: return vec4(0.62, 0.62, 0.62, 1.0); // Full Moon  - brightest (still readable)
+            case PhaseKind::PK_FQ: return vec4(0.52, 0.52, 0.52, 1.0); // First Quarter - mid
+            case PhaseKind::PK_LQ: return vec4(0.52, 0.52, 0.52, 1.0); // Last Quarter  - mid
+            case PhaseKind::PK_NM: return vec4(0.34, 0.34, 0.34, 1.0); // New Moon   - darkest
+            default:               return vec4(0.43, 0.43, 0.43, 1.0); // Intermediate - between new & quarter
         }
     }
 
@@ -106,8 +113,8 @@ namespace TimeUtils {
     string FriendlyDeltaLong(int64 deltaMs) {
         int64 totalSeconds = Math::Abs(deltaMs) / 1000;
 
-        int days = int(totalSeconds / 86400); totalSeconds %= 86400;
-        int hours = int(totalSeconds / 3600); totalSeconds %= 3600;
+        int days    = int(totalSeconds / 86400); totalSeconds %= 86400;
+        int hours   = int(totalSeconds / 3600); totalSeconds %= 3600;
         int minutes = int(totalSeconds / 60);
         int seconds = int(totalSeconds % 60);
 

@@ -1,5 +1,4 @@
 /*
-/*
  * =============================================================================
  * @namespace Notifications
  * This namespace contains all functions and data related to managing and displaying notifications for moon events.

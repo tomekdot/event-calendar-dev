@@ -3,6 +3,11 @@
  * Provides options to toggle UI windows and run tests.
  */
 void RenderMenu() {
+    // Only show the entry in the Plugins dropdown when it is NOT already shown on the
+    // main menu bar (RenderMenuMain). This avoids a duplicate "Event Calendar" entry
+    // while always leaving exactly one way to open the window.
+    if (S_ShowCalendarInMainMenu) return;
+
     // Single top-level menu item that toggles the calendar window.
     if (UI::MenuItem(Icons::CalendarO + " " + "Event Calendar", "", g_UIState.ShowCalendarWindow)) {
         g_UIState.ShowCalendarWindow = !g_UIState.ShowCalendarWindow;
@@ -190,46 +195,6 @@ void RenderCalendarGrid() {
         }
     }
     UI::EndTable();
-}
-
-/*
- * Renders the list of events for the currently selected day.
- */
-void RenderEventList() {
-    UI::Text("Events for: " + g_UIState.CalYear + "-" + TimeUtils::Two(g_UIState.CalMonth) + "-" + TimeUtils::Two(g_UIState.SelectedDay));
-    
-    UI::BeginChild("EventList", vec2(0, -1), true);
-    if (g_IsLoading) {
-        UI::TextDisabled("Loading...");
-    } else if (g_Events.IsEmpty()) {
-        UI::TextDisabled("No events loaded.");
-    } else {
-        bool foundEvent = false;
-        // Iterate through all events to find ones matching the selected day.
-        string key = tostring(g_UIState.SelectedDay);
-        if (g_MonthEventCache.Exists(key)) {
-            array<EventItem@>@ dayList = cast<array<EventItem@>@>(g_MonthEventCache[key]);
-            if (dayList !is null) {
-                // Sort for display
-                Helpers::SortEventsByStart(dayList);
-                for (uint i = 0; i < dayList.Length; i++) {
-                    auto@ e = dayList[i];
-                    if (e is null) continue;
-                    int Y, M, D, h, m, s;
-                    TimeUtils::UtcYMDHMSFromMs(e.startMs, Y, M, D, h, m, s);
-                    string tag = e.source.Length > 0 ? ("[" + e.source + "] ") : "";
-                    string dur = e.durationSec > 0 ? (" (" + tostring(e.durationSec/60) + "m)") : "";
-                    UI::Text(Moon::PhaseEmojiForTitleLower(e.title) + " " + TimeUtils::Two(h) + ":" + TimeUtils::Two(m) + " - " + tag + e.title + dur);
-                }
-                foundEvent = dayList.Length > 0;
-            }
-        }
-        
-        if (!foundEvent) {
-            UI::TextDisabled("No events for this day.");
-        }
-    }
-    UI::EndChild();
 }
 
 /*
